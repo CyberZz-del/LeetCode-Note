@@ -242,3 +242,59 @@ class RandomizedSet:
         return choice(self.nums) #O(1)时间内获取--数组
 ```
 
+# 238.除自身以外数组的乘积
+
+给你一个整数数组 `nums`，返回 数组 `answer` ，其中 `answer[i]` 等于 `nums` 中除 `nums[i]` 之外其余各元素的乘积 。
+
+题目数据 **保证** 数组 `nums`之中任意元素的全部前缀元素和后缀的乘积都在 **32 位** 整数范围内。
+
+请 **不要使用除法，**且在 `O(n)` 时间复杂度内完成此题。
+
+ 
+
+**示例 1:**
+
+```
+输入: nums = [1,2,3,4]
+输出: [24,12,8,6]
+```
+
+**示例 2:**
+
+```
+输入: nums = [-1,1,0,-3,3]
+输出: [0,0,9,0,0]
+```
+
+解法：左右乘积列表
+
+正序和倒序遍历`nums`数组 ，维护两个列表 `Fronlist` 和 `Baclist` 分别保存前i个元素的积和后i个元素的积，然后`answer`的元素直接调用对应的 `Fronlist` 和 `Baclist` 相乘即可
+
+```py
+class Solution:
+    def productExceptSelf(self, nums: List[int]) -> List[int]:
+        Fronlist = []
+        mul = 1 
+        for i in range(len(nums)):
+            mul = mul * nums[i]
+            Fronlist.append(mul)
+
+        Baclist = []
+        mul = 1
+        for i in range(len(nums)):
+            mul = mul * nums[len(nums)-i-1]
+            Baclist.append(mul)
+
+        answer = []
+        for i in range(len(nums)):
+            if i==0:
+                answer.append(Baclist[len(nums)-2])
+                continue
+            if i==len(nums)-1:
+                answer.append(Fronlist[len(nums)-2])
+                continue
+            answer.append(Fronlist[i-1]*Baclist[len(nums)-i-2])
+        return answer
+
+```
+
