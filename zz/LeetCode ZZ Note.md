@@ -358,3 +358,56 @@ class Solution:
         return -1
 ```
 
+# 135.分发糖果
+
+`n` 个孩子站成一排。给你一个整数数组 `ratings` 表示每个孩子的评分。
+
+你需要按照以下要求，给这些孩子分发糖果：
+
+- 每个孩子至少分配到 `1` 个糖果。
+- 相邻两个孩子评分更高的孩子会获得更多的糖果。
+
+请你给每个孩子分发糖果，计算并返回需要准备的 **最少糖果数目** 。
+
+ 
+
+**示例 1：**
+
+```
+输入：ratings = [1,0,2]
+输出：5
+解释：你可以分别给第一个、第二个、第三个孩子分发 2、1、2 颗糖果。
+```
+
+解法：左右遍历
+
+- 左规则：如果 `rating[i-1]<rating[i]` 那么 `left[i]=left[i-1]+1` 否则 `left[i]=1`
+- 右规则：如果 `rating[i+1]<rating[i]` 那么 `right[i]=right[i+1]+1` 否则 `right[i]=1`
+
+最终分发糖果的结果序列：`lis[i] = max(left[i],right[i])`
+
+```py
+class Solution:
+    def candy(self, ratings: List[int]) -> int:
+        
+        n = len(ratings)
+        if n == 1: #特殊情况
+            return 1
+        left = [0]*n
+        right = [0]*n
+        for i in range(n): #左规则
+            if i>0 and ratings[i-1]<ratings[i]:
+                left[i] = left[i-1] + 1
+            else:
+                left[i] = 1
+        for i in reversed(range(n)): #右规则
+            if i < n-1 and ratings[i+1]<ratings[i]:
+                right[i] = right[i+1] + 1
+            else:
+                right[i] = 1
+        lis = [0]*n
+        for i in range(n):
+            lis[i] = max(left[i],right[i])
+        return sum(lis)
+```
+
