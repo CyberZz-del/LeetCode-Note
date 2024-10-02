@@ -411,3 +411,221 @@ class Solution:
         return sum(lis)
 ```
 
+# 42.接雨水
+
+给定 `n` 个非负整数表示每个宽度为 `1` 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。
+
+ 
+
+**示例 1：**
+
+![img](./assets/rainwatertrap.png)
+
+```
+输入：height = [0,1,0,2,1,0,1,3,2,1,2,1]
+输出：6
+解释：上面是由数组 [0,1,0,2,1,0,1,3,2,1,2,1] 表示的高度图，在这种情况下，可以接 6 个单位的雨水（蓝色部分表示雨水）。 
+```
+
+解法1：暴力
+
+从下到上检查二维表每一个点，只要两边有墙，下面有墙或者水，则满足条件
+
+结果：内存溢出
+
+```py
+class Solution:
+    
+    def trap(self, height: List[int]) -> int:
+        water = 0
+        block = []
+        maxhight = max(height)
+        n = len(height)
+        for i in range(n):
+            lis = [1]*height[i]
+            while(len(lis)<maxhight):
+                lis.append(0)
+            block.append(lis)
+        for j in range(maxhight):
+            for i in range(n):
+                if block[i][j] == 0:
+                    if j == 0:
+                        flag1, flag2 = False, False
+                        for i1 in range(i):
+                            if block[i1][j] == 1:
+                                flag1 = True
+                        for i2 in range(i+1, n):
+                            if block[i2][j] == 1:
+                                flag2 = True
+                        if flag1 and flag2:
+                            print(f"({i}, {j})")
+                            block[i][j] = 2
+                            water += 1
+                        else:
+                            block[i][j] = -1
+                    else:
+                        if block[i][j-1] == -1:
+                            block[i][j] = -1
+                            continue
+                        elif block[i][j-1] == 1 or block[i][j-1] == 2:
+                            flag1, flag2 = False, False
+                            for i1 in range(i):
+                                if block[i1][j] == 1:
+                                    flag1 = True
+                            for i2 in range(i+1, n):
+                                if block[i2][j] == 1:
+                                    flag2 = True
+                            if flag1 and flag2:
+                                print(f"({i}, {j})")
+                                block[i][j] = 2
+                                water += 1
+                            else:
+                                block[i][j] = -1
+                                continue
+        return water  
+```
+
+解法2：
+
+还是暴力（笑
+
+先找到一个“最高峰”，再寻找一个“次高峰”，“次高峰”和“最高峰”之间不高于”次高峰“的空气格子都能装雨水，计算完后再换一个“次高峰”，重复以上步骤，直到没有“次高峰”。
+
+```py
+class Solution:
+    
+    def trap(self, height: List[int]) -> int:
+        if len(set(height)) == 1:
+            return 0
+        if all(height[i] <= height[i + 1] for i in range(len(height) - 1)) or \
+        all(height[i] >= height[i + 1] for i in range(len(height) - 1)):
+            return 0    #单调的数组直接返回0
+        block = []
+        n = len(height)
+        lised = [-1]*n
+        for i in range(n):
+            block.append({"index":i, "height":height[i]})
+        block.sort( key = lambda x : x["height"])
+        highest = block.pop() #弹出最高峰
+        index_highest = highest["index"]
+        
+        while len(block) > 0:
+            current_height = block.pop()   #弹出次高峰直到空栈
+            index_cur = current_height["index"]
+            if lised[index_cur] >= 0:
+                continue
+            height_cur = current_height["height"]
+            if index_cur > index_highest:
+                for i in range(index_highest+1, index_cur, 1):
+                    if lised[i] < 0:
+                        lised[i] = height_cur - height[i]
+                        if lised[i] < 0:
+                            lised[i] = 0
+                        lised[index_cur] = 0
+            else:
+                for i in range(index_highest-1, index_cur, -1):
+                    if lised[i] < 0:
+                        lised[i] = height_cur - height[i]
+                        if lised[i] < 0:
+                            lised[i] = 0
+                        lised[index_cur] = 0
+        lised[index_highest] = 0
+        lised[0]=0
+        lised[n-1] = 0
+        assert(-1 not in lised)
+        return sum(lised)   
+```
+
+解法3：动态规划（官解
+
+创建两个长度为 n 的数组 $leftMax 和 rightMax$。对于 $0≤i<n，leftMax[i]$ 表示下标 i 及其左边的位置中，$height$ 的最大高度，r$ightMax[i]$ 表示下标 i 及其右边的位置中，height 的最大高度。
+
+显然，$leftMax[0]=height[0]$，$rightMax[n−1]=height[n−1]$。两个数组的其余元素的计算如下：
+
+当 $1≤i≤n−1$ 时，$leftMax[i]=max(leftMax[i−1],height[i])；$
+
+当 $0≤i≤n−2$ 时，$rightMax[i]=max(rightMax[i+1],height[i])。$
+
+因此可以正向遍历数组 height 得到数组 leftMax 的每个元素值，反向遍历数组 height 得到数组 rightMax 的每个元素值。
+
+在得到数组 leftMax 和 rightMax 的每个元素值之后，对于 0≤i<n，下标 i 处能接的雨水量等于 $min(leftMax[i],rightMax[i])−height[i]$。遍历每个下标位置即可得到能接的雨水总量。
+
+动态规划做法可以由下图体现。
+
+![fig1](./assets/1.png)
+
+```py
+class Solution:
+    def trap(self, height: List[int]) -> int:
+        if not height:
+            return 0
+        
+        n = len(height)
+        leftMax = [height[0]] + [0] * (n - 1)
+        for i in range(1, n):
+            leftMax[i] = max(leftMax[i - 1], height[i])
+
+        rightMax = [0] * (n - 1) + [height[n - 1]]
+        for i in range(n - 2, -1, -1):
+            rightMax[i] = max(rightMax[i + 1], height[i])
+
+        ans = sum(min(leftMax[i], rightMax[i]) - height[i] for i in range(n))
+        return ans
+```
+
+解法4：单调栈
+
+除了计算并存储每个位置两边的最大高度以外，也可以用单调栈计算能接的雨水总量。
+
+维护一个单调栈，单调栈存储的是下标，满足从栈底到栈顶的下标对应的数组 height 中的元素递减。
+
+从左到右遍历数组，遍历到下标 i 时，如果栈内至少有两个元素，记栈顶元素为 top，top 的下面一个元素是 left，则一定有 $height[left]≥height[top]$。如果 $height[i]>height[top]$，则得到一个可以接雨水的区域，该区域的宽度是 i−left−1，高度是 $min(height[left],height[i])−height[top]，$根据宽度和高度即可计算得到该区域能接的雨水量。
+
+为了得到 left，需要将 top 出栈。在对 top 计算能接的雨水量之后，left 变成新的 top，重复上述操作，直到栈变为空，或者栈顶下标对应的 height 中的元素大于或等于 $height[i]。$
+
+在对下标 i 处计算能接的雨水量之后，将 i 入栈，继续遍历后面的下标，计算能接的雨水量。遍历结束之后即可得到能接的雨水总量。
+
+```py
+class Solution:
+    def trap(self, height: List[int]) -> int:
+        ans = 0
+        stack = list()
+        n = len(height)
+        
+        for i, h in enumerate(height):
+            while stack and h > height[stack[-1]]:
+                top = stack.pop()
+                if not stack:
+                    break
+                left = stack[-1]
+                currWidth = i - left - 1
+                currHeight = min(height[left], height[i]) - height[top]
+                ans += currWidth * currHeight
+            stack.append(i)
+        
+        return ans
+```
+
+> `enumerate(iterable, start=0)` 
+>
+> 返回一个枚举对象。*iterable* 必须是一个序列，或 [iterator](https://docs.python.org/zh-cn/3/glossary.html#term-iterator)，或其他支持迭代的对象。 [`enumerate()`](https://docs.python.org/zh-cn/3/library/functions.html#enumerate) 返回的迭代器的 [`__next__()`](https://docs.python.org/zh-cn/3/library/stdtypes.html#iterator.__next__) 方法返回一个元组，里面包含一个计数值（从 *start* 开始，默认为 0）和通过迭代 *iterable* 获得的值。
+>
+> \>>>
+>
+> ```py
+> >>> seasons = ['Spring', 'Summer', 'Fall', 'Winter']
+> >>> list(enumerate(seasons))
+> [(0, 'Spring'), (1, 'Summer'), (2, 'Fall'), (3, 'Winter')]
+> >>> list(enumerate(seasons, start=1))
+> [(1, 'Spring'), (2, 'Summer'), (3, 'Fall'), (4, 'Winter')]
+> ```
+>
+> 等价于:
+>
+> ```py
+> def enumerate(iterable, start=0):
+>     n = start
+>     for elem in iterable:
+>         yield n, elem
+>         n += 1
+> ```
