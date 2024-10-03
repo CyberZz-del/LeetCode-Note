@@ -1,3 +1,5 @@
+[TOC]
+
 # 169.多数元素
 
 给定一个大小为 `n` 的数组 `nums` ，返回其中的多数元素。多数元素是指在数组中出现次数 **大于** `⌊ n/2 ⌋` 的元素。
@@ -629,3 +631,142 @@ class Solution:
 >         yield n, elem
 >         n += 1
 > ```
+
+# 13.罗马数字转整数
+
+七个不同的符号代表罗马数字，其值如下：
+
+| 符号 | 值   |
+| ---- | ---- |
+| I    | 1    |
+| V    | 5    |
+| X    | 10   |
+| L    | 50   |
+| C    | 100  |
+| D    | 500  |
+| M    | 1000 |
+
+罗马数字是通过添加从最高到最低的小数位值的转换而形成的。将小数位值转换为罗马数字有以下规则：
+
+- 如果该值不是以 4 或 9 开头，请选择可以从输入中减去的最大值的符号，将该符号附加到结果，减去其值，然后将其余部分转换为罗马数字。
+- 如果该值以 4 或 9 开头，使用 **减法形式**，表示从以下符号中减去一个符号，例如 4 是 5 (`V`) 减 1 (`I`): `IV` ，9 是 10 (`X`) 减 1 (`I`)：`IX`。仅使用以下减法形式：4 (`IV`)，9 (`IX`)，40 (`XL`)，90 (`XC`)，400 (`CD`) 和 900 (`CM`)。
+- 只有 10 的次方（`I`, `X`, `C`, `M`）最多可以连续附加 3 次以代表 10 的倍数。你不能多次附加 5 (`V`)，50 (`L`) 或 500 (`D`)。如果需要将符号附加4次，请使用 **减法形式**。
+
+给定一个整数，将其转换为罗马数字。
+
+解法：双指针
+
+```py
+class Solution:
+    def f(self, s:str) -> int:
+        assert(len(s)==1 or len(s)==2)
+        if s=='I':
+            return 1
+        elif s=='V':
+            return 5
+        elif s=='X':
+            return 10
+        elif s=='L':
+            return 50
+        elif s=='C':
+            return 100
+        elif s=='D':
+            return 500
+        elif s=='M':
+            return 1000
+        elif s=='IV':
+            return 4
+        elif s=='IX':
+            return 9
+        elif s=='XL':
+            return 40
+        elif s=="XC":
+            return 90
+        elif s=='CD':
+            return 400
+        elif s=='CM':
+            return 900
+        return 0
+    def romanToInt(self, s: str) -> int:
+        n = len(s)
+        if n == 1:
+            return self.f(s)
+        i = 0
+        j = 1
+        num = 0
+        while(i<n and j < n):
+            if self.f(s[i:j+1]) == 0:
+                num += self.f(s[i:j])
+                i+=1
+                j+=1
+            else:
+                num += self.f(s[i:j+1])
+                i+=2
+                j+=2
+        if i < n:
+            num += self.f(s[i:j])
+        return num
+```
+
+# 12.整数转罗马数字
+
+同上
+
+解法：递归秒了
+
+```py
+class Solution:
+    def intToRoman(self, num: int) -> str:
+        if num == 0:
+            return ""
+        elif num == 1:
+            return "I"
+        elif num > 1 and num < 4:
+            return "I" + self.intToRoman(num - 1)
+        elif num == 4:
+            return "IV"
+        elif num == 5:
+            return "V"
+        elif num > 5 and num < 9:
+            return "V" + self.intToRoman(num - 5)
+        elif num == 9:
+            return "IX"
+        elif num == 10:
+            return "X"
+        elif num > 10 and num < 40:
+            return "X"+self.intToRoman(num - 10)
+        elif num == 40:
+            return "XL"
+        elif num > 40 and num < 50:
+            return "XL"+self.intToRoman(num - 40)
+        elif num == 50:
+            return "L"
+        elif num > 50 and num < 90:
+            return "L" + self.intToRoman(num - 50)
+        elif num == 90:
+            return "XC"
+        elif num > 90 and num < 100:
+            return "XC" + self.intToRoman(num - 90)
+        elif num == 100:
+            return "C"
+        elif num > 100 and num < 400:
+            return "C"+ self.intToRoman(num - 100)
+        elif num == 400:
+            return "CD"
+        elif num > 400 and num < 500:
+            return "CD" + self.intToRoman(num-400)
+        elif num == 500:
+            return "D"
+        elif num > 500 and num < 900:
+            return "D" + self.intToRoman(num - 500)
+        elif num == 900:
+            return "CM"
+        elif num > 900 and num < 1000:
+            return "CM" + self.intToRoman(num - 900)
+        elif num == 1000:
+            return "M"
+        elif num > 1000:
+            return "M" + self.intToRoman(num - 1000)
+```
+
+~~python写代码真是太快了~~
