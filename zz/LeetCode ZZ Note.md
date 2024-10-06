@@ -808,7 +808,7 @@ class Solution:
         return prefix    
 ```
 
-68.文本左右对齐
+# 68.文本左右对齐
 
 给定一个单词数组 `words` 和一个长度 `maxWidth` ，重新排版单词，使其成为每行恰好有 `maxWidth` 个字符，且左右两端对齐的文本。
 
@@ -874,5 +874,112 @@ class Solution:
         spacenum = maxWidth - len(result[-1])
         result[-1] += " "*spacenum    
         return result
+```
+
+# 392.判断字序列
+
+给定字符串 **s** 和 **t** ，判断 **s** 是否为 **t** 的子序列。
+
+字符串的一个子序列是原始字符串删除一些（也可以不删除）字符而不改变剩余字符相对位置形成的新字符串。（例如，`"ace"`是`"abcde"`的一个子序列，而`"aec"`不是）。
+
+**进阶：**
+
+如果有大量输入的 S，称作 S1, S2, ... , Sk 其中 k >= 10亿，你需要依次检查它们是否为 T 的子序列。在这种情况下，你会怎样改变代码？
+
+
+
+zz解法：双指针遍历即可，贪心的匹配`t`靠前的字符
+
+```python
+class Solution:
+    def isSubsequence(self, s: str, t: str) -> bool:
+        i = 0
+        j = 0
+        while(i<len(s) and j < len(t)):
+            if s[i] == t[j]:
+                i += 1
+                j += 1
+                continue
+            j += 1
+        if i == len(s):
+            return True
+        return False
+```
+
+# 11.盛最多水的容器
+
+给定一个长度为 `n` 的整数数组 `height` 。有 `n` 条垂线，第 `i` 条线的两个端点是 `(i, 0)` 和 `(i, height[i])` 。
+
+找出其中的两条线，使得它们与 `x` 轴共同构成的容器可以容纳最多的水。
+
+返回容器可以储存的最大水量。
+
+**说明：**你不能倾斜容器。
+
+ 
+
+**示例 1：**
+
+![img](./assets/question_11.jpg)
+
+```
+输入：[1,8,6,2,5,4,8,3,7]
+输出：49 
+解释：图中垂直线代表输入数组 [1,8,6,2,5,4,8,3,7]。在此情况下，容器能够容纳水（表示为蓝色部分）的最大值为 49。
+```
+
+zz解法1：暴力
+
+将可能出现的下标组合列举出来，再以盛水量（` min(height[x[0]], height[x[1]])*(x[1]-x[0])`）进行关键词排序
+
+```py
+class Solution:
+    def maxArea(self, height: List[int]) -> int:
+        indexlis = [[i,j] for i in range(len(height)-1) for j in range(i+1,len(height))]
+        indexlis.sort(reverse=True,key=lambda x: min(height[x[0]], height[x[1]])*(x[1]-x[0]))
+        return min(height[indexlis[0][0]], height[indexlis[0][1]])*(indexlis[0][1] - indexlis[0][0])
+```
+
+结果：**Memory Limit Exceeded** :joy:
+
+zz解法2：暴力
+
+```py
+class Solution:
+    def maxArea(self, height: List[int]) -> int:
+        maxarea = 0
+        for i in range(len(height)-1):
+            for j in range(i+1, len(height)):
+                maxarea = max(min(height[i], height[j])*(j-i), maxarea)
+        return maxarea
+```
+
+结果：**Time Limit Exceeded** :joy:
+
+官解：双指针
+
+ 初始双指针指向数组两端，每次计算当前双指针指向的容器边界所对应的面积后，**移动数值较小的双指针**（向数组中间移动），此过程中计算出的最大面积即为所求。
+
+证明：本质是一种贪心算法
+
+由于容器的大小由宽度和较小的容器边界决定，考虑初始状态（双指针在数组两端），此时如果移动较大数值的指针的话（无论移动多少），那么容器的容量**不可能**再增加了。如果移动较小数值指针的话，那么容器的容量则**有可能**增加。那么我们只需要每次选择有可能增加容器容量的移动方式，即，移动较小数值的指针，在移动的过程中一定能找到最大的容量。
+
+~~贪心算法的证明一直以来都是鼠鼠的心病~~ 
+
+> 严谨的证明见官网：[11. 盛最多水的容器 - 力扣（LeetCode）](https://leetcode.cn/problems/container-with-most-water/solutions/207215/sheng-zui-duo-shui-de-rong-qi-by-leetcode-solution/?source=vscode)
+
+```py
+class Solution:
+    def maxArea(self, height: List[int]) -> int:
+        maxarea = 0
+        i = 0
+        j = len(height) - 1
+        while(i < j):
+            maxarea = max(min(height[i], height[j])*(j-i), maxarea)
+            if height[i] > height[j]:
+                j -= 1
+            else:
+                i += 1
+        return maxarea
 ```
 
