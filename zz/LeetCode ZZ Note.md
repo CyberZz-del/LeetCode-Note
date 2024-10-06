@@ -1,3 +1,5 @@
+[TOC]
+
 # 169.多数元素
 
 给定一个大小为 `n` 的数组 `nums` ，返回其中的多数元素。多数元素是指在数组中出现次数 **大于** `⌊ n/2 ⌋` 的元素。
@@ -356,5 +358,628 @@ class Solution:
                 i+=1
             
         return -1
+```
+
+# 135.分发糖果
+
+`n` 个孩子站成一排。给你一个整数数组 `ratings` 表示每个孩子的评分。
+
+你需要按照以下要求，给这些孩子分发糖果：
+
+- 每个孩子至少分配到 `1` 个糖果。
+- 相邻两个孩子评分更高的孩子会获得更多的糖果。
+
+请你给每个孩子分发糖果，计算并返回需要准备的 **最少糖果数目** 。
+
+ 
+
+**示例 1：**
+
+```
+输入：ratings = [1,0,2]
+输出：5
+解释：你可以分别给第一个、第二个、第三个孩子分发 2、1、2 颗糖果。
+```
+
+解法：左右遍历
+
+- 左规则：如果 `rating[i-1]<rating[i]` 那么 `left[i]=left[i-1]+1` 否则 `left[i]=1`
+- 右规则：如果 `rating[i+1]<rating[i]` 那么 `right[i]=right[i+1]+1` 否则 `right[i]=1`
+
+最终分发糖果的结果序列：`lis[i] = max(left[i],right[i])`
+
+```py
+class Solution:
+    def candy(self, ratings: List[int]) -> int:
+        
+        n = len(ratings)
+        if n == 1: #特殊情况
+            return 1
+        left = [0]*n
+        right = [0]*n
+        for i in range(n): #左规则
+            if i>0 and ratings[i-1]<ratings[i]:
+                left[i] = left[i-1] + 1
+            else:
+                left[i] = 1
+        for i in reversed(range(n)): #右规则
+            if i < n-1 and ratings[i+1]<ratings[i]:
+                right[i] = right[i+1] + 1
+            else:
+                right[i] = 1
+        lis = [0]*n
+        for i in range(n):
+            lis[i] = max(left[i],right[i])
+        return sum(lis)
+```
+
+# 42.接雨水
+
+给定 `n` 个非负整数表示每个宽度为 `1` 的柱子的高度图，计算按此排列的柱子，下雨之后能接多少雨水。
+
+ 
+
+**示例 1：**
+
+![img](./assets/rainwatertrap.png)
+
+```
+输入：height = [0,1,0,2,1,0,1,3,2,1,2,1]
+输出：6
+解释：上面是由数组 [0,1,0,2,1,0,1,3,2,1,2,1] 表示的高度图，在这种情况下，可以接 6 个单位的雨水（蓝色部分表示雨水）。 
+```
+
+解法1：暴力
+
+从下到上检查二维表每一个点，只要两边有墙，下面有墙或者水，则满足条件
+
+结果：内存溢出
+
+```py
+class Solution:
+    
+    def trap(self, height: List[int]) -> int:
+        water = 0
+        block = []
+        maxhight = max(height)
+        n = len(height)
+        for i in range(n):
+            lis = [1]*height[i]
+            while(len(lis)<maxhight):
+                lis.append(0)
+            block.append(lis)
+        for j in range(maxhight):
+            for i in range(n):
+                if block[i][j] == 0:
+                    if j == 0:
+                        flag1, flag2 = False, False
+                        for i1 in range(i):
+                            if block[i1][j] == 1:
+                                flag1 = True
+                        for i2 in range(i+1, n):
+                            if block[i2][j] == 1:
+                                flag2 = True
+                        if flag1 and flag2:
+                            print(f"({i}, {j})")
+                            block[i][j] = 2
+                            water += 1
+                        else:
+                            block[i][j] = -1
+                    else:
+                        if block[i][j-1] == -1:
+                            block[i][j] = -1
+                            continue
+                        elif block[i][j-1] == 1 or block[i][j-1] == 2:
+                            flag1, flag2 = False, False
+                            for i1 in range(i):
+                                if block[i1][j] == 1:
+                                    flag1 = True
+                            for i2 in range(i+1, n):
+                                if block[i2][j] == 1:
+                                    flag2 = True
+                            if flag1 and flag2:
+                                print(f"({i}, {j})")
+                                block[i][j] = 2
+                                water += 1
+                            else:
+                                block[i][j] = -1
+                                continue
+        return water  
+```
+
+解法2：
+
+还是暴力（笑
+
+先找到一个“最高峰”，再寻找一个“次高峰”，“次高峰”和“最高峰”之间不高于”次高峰“的空气格子都能装雨水，计算完后再换一个“次高峰”，重复以上步骤，直到没有“次高峰”。
+
+```py
+class Solution:
+    
+    def trap(self, height: List[int]) -> int:
+        if len(set(height)) == 1:
+            return 0
+        if all(height[i] <= height[i + 1] for i in range(len(height) - 1)) or \
+        all(height[i] >= height[i + 1] for i in range(len(height) - 1)):
+            return 0    #单调的数组直接返回0
+        block = []
+        n = len(height)
+        lised = [-1]*n
+        for i in range(n):
+            block.append({"index":i, "height":height[i]})
+        block.sort( key = lambda x : x["height"])
+        highest = block.pop() #弹出最高峰
+        index_highest = highest["index"]
+        
+        while len(block) > 0:
+            current_height = block.pop()   #弹出次高峰直到空栈
+            index_cur = current_height["index"]
+            if lised[index_cur] >= 0:
+                continue
+            height_cur = current_height["height"]
+            if index_cur > index_highest:
+                for i in range(index_highest+1, index_cur, 1):
+                    if lised[i] < 0:
+                        lised[i] = height_cur - height[i]
+                        if lised[i] < 0:
+                            lised[i] = 0
+                        lised[index_cur] = 0
+            else:
+                for i in range(index_highest-1, index_cur, -1):
+                    if lised[i] < 0:
+                        lised[i] = height_cur - height[i]
+                        if lised[i] < 0:
+                            lised[i] = 0
+                        lised[index_cur] = 0
+        lised[index_highest] = 0
+        lised[0]=0
+        lised[n-1] = 0
+        assert(-1 not in lised)
+        return sum(lised)   
+```
+
+解法3：动态规划（官解
+
+创建两个长度为 n 的数组 $leftMax 和 rightMax$。对于 $0≤i<n，leftMax[i]$ 表示下标 i 及其左边的位置中，$height$ 的最大高度，r$ightMax[i]$ 表示下标 i 及其右边的位置中，height 的最大高度。
+
+显然，$leftMax[0]=height[0]$，$rightMax[n−1]=height[n−1]$。两个数组的其余元素的计算如下：
+
+当 $1≤i≤n−1$ 时，$leftMax[i]=max(leftMax[i−1],height[i])；$
+
+当 $0≤i≤n−2$ 时，$rightMax[i]=max(rightMax[i+1],height[i])。$
+
+因此可以正向遍历数组 height 得到数组 leftMax 的每个元素值，反向遍历数组 height 得到数组 rightMax 的每个元素值。
+
+在得到数组 leftMax 和 rightMax 的每个元素值之后，对于 0≤i<n，下标 i 处能接的雨水量等于 $min(leftMax[i],rightMax[i])−height[i]$。遍历每个下标位置即可得到能接的雨水总量。
+
+动态规划做法可以由下图体现。
+
+![fig1](./assets/1.png)
+
+```py
+class Solution:
+    def trap(self, height: List[int]) -> int:
+        if not height:
+            return 0
+        
+        n = len(height)
+        leftMax = [height[0]] + [0] * (n - 1)
+        for i in range(1, n):
+            leftMax[i] = max(leftMax[i - 1], height[i])
+
+        rightMax = [0] * (n - 1) + [height[n - 1]]
+        for i in range(n - 2, -1, -1):
+            rightMax[i] = max(rightMax[i + 1], height[i])
+
+        ans = sum(min(leftMax[i], rightMax[i]) - height[i] for i in range(n))
+        return ans
+```
+
+解法4：单调栈
+
+除了计算并存储每个位置两边的最大高度以外，也可以用单调栈计算能接的雨水总量。
+
+维护一个单调栈，单调栈存储的是下标，满足从栈底到栈顶的下标对应的数组 height 中的元素递减。
+
+从左到右遍历数组，遍历到下标 i 时，如果栈内至少有两个元素，记栈顶元素为 top，top 的下面一个元素是 left，则一定有 $height[left]≥height[top]$。如果 $height[i]>height[top]$，则得到一个可以接雨水的区域，该区域的宽度是 i−left−1，高度是 $min(height[left],height[i])−height[top]，$根据宽度和高度即可计算得到该区域能接的雨水量。
+
+为了得到 left，需要将 top 出栈。在对 top 计算能接的雨水量之后，left 变成新的 top，重复上述操作，直到栈变为空，或者栈顶下标对应的 height 中的元素大于或等于 $height[i]。$
+
+在对下标 i 处计算能接的雨水量之后，将 i 入栈，继续遍历后面的下标，计算能接的雨水量。遍历结束之后即可得到能接的雨水总量。
+
+```py
+class Solution:
+    def trap(self, height: List[int]) -> int:
+        ans = 0
+        stack = list()
+        n = len(height)
+        
+        for i, h in enumerate(height):
+            while stack and h > height[stack[-1]]:
+                top = stack.pop()
+                if not stack:
+                    break
+                left = stack[-1]
+                currWidth = i - left - 1
+                currHeight = min(height[left], height[i]) - height[top]
+                ans += currWidth * currHeight
+            stack.append(i)
+        
+        return ans
+```
+
+> `enumerate(iterable, start=0)` 
+>
+> 返回一个枚举对象。*iterable* 必须是一个序列，或 [iterator](https://docs.python.org/zh-cn/3/glossary.html#term-iterator)，或其他支持迭代的对象。 [`enumerate()`](https://docs.python.org/zh-cn/3/library/functions.html#enumerate) 返回的迭代器的 [`__next__()`](https://docs.python.org/zh-cn/3/library/stdtypes.html#iterator.__next__) 方法返回一个元组，里面包含一个计数值（从 *start* 开始，默认为 0）和通过迭代 *iterable* 获得的值。
+>
+> \>>>
+>
+> ```py
+> >>> seasons = ['Spring', 'Summer', 'Fall', 'Winter']
+> >>> list(enumerate(seasons))
+> [(0, 'Spring'), (1, 'Summer'), (2, 'Fall'), (3, 'Winter')]
+> >>> list(enumerate(seasons, start=1))
+> [(1, 'Spring'), (2, 'Summer'), (3, 'Fall'), (4, 'Winter')]
+> ```
+>
+> 等价于:
+>
+> ```py
+> def enumerate(iterable, start=0):
+>     n = start
+>     for elem in iterable:
+>         yield n, elem
+>         n += 1
+> ```
+
+# 13.罗马数字转整数
+
+七个不同的符号代表罗马数字，其值如下：
+
+| 符号 | 值   |
+| ---- | ---- |
+| I    | 1    |
+| V    | 5    |
+| X    | 10   |
+| L    | 50   |
+| C    | 100  |
+| D    | 500  |
+| M    | 1000 |
+
+罗马数字是通过添加从最高到最低的小数位值的转换而形成的。将小数位值转换为罗马数字有以下规则：
+
+- 如果该值不是以 4 或 9 开头，请选择可以从输入中减去的最大值的符号，将该符号附加到结果，减去其值，然后将其余部分转换为罗马数字。
+- 如果该值以 4 或 9 开头，使用 **减法形式**，表示从以下符号中减去一个符号，例如 4 是 5 (`V`) 减 1 (`I`): `IV` ，9 是 10 (`X`) 减 1 (`I`)：`IX`。仅使用以下减法形式：4 (`IV`)，9 (`IX`)，40 (`XL`)，90 (`XC`)，400 (`CD`) 和 900 (`CM`)。
+- 只有 10 的次方（`I`, `X`, `C`, `M`）最多可以连续附加 3 次以代表 10 的倍数。你不能多次附加 5 (`V`)，50 (`L`) 或 500 (`D`)。如果需要将符号附加4次，请使用 **减法形式**。
+
+给定一个整数，将其转换为罗马数字。
+
+解法：双指针
+
+```py
+class Solution:
+    def f(self, s:str) -> int:
+        assert(len(s)==1 or len(s)==2)
+        if s=='I':
+            return 1
+        elif s=='V':
+            return 5
+        elif s=='X':
+            return 10
+        elif s=='L':
+            return 50
+        elif s=='C':
+            return 100
+        elif s=='D':
+            return 500
+        elif s=='M':
+            return 1000
+        elif s=='IV':
+            return 4
+        elif s=='IX':
+            return 9
+        elif s=='XL':
+            return 40
+        elif s=="XC":
+            return 90
+        elif s=='CD':
+            return 400
+        elif s=='CM':
+            return 900
+        return 0
+    def romanToInt(self, s: str) -> int:
+        n = len(s)
+        if n == 1:
+            return self.f(s)
+        i = 0
+        j = 1
+        num = 0
+        while(i<n and j < n):
+            if self.f(s[i:j+1]) == 0:
+                num += self.f(s[i:j])
+                i+=1
+                j+=1
+            else:
+                num += self.f(s[i:j+1])
+                i+=2
+                j+=2
+        if i < n:
+            num += self.f(s[i:j])
+        return num
+```
+
+# 12.整数转罗马数字
+
+同上
+
+解法：递归秒了
+
+```py
+class Solution:
+    def intToRoman(self, num: int) -> str:
+        if num == 0:
+            return ""
+        elif num == 1:
+            return "I"
+        elif num > 1 and num < 4:
+            return "I" + self.intToRoman(num - 1)
+        elif num == 4:
+            return "IV"
+        elif num == 5:
+            return "V"
+        elif num > 5 and num < 9:
+            return "V" + self.intToRoman(num - 5)
+        elif num == 9:
+            return "IX"
+        elif num == 10:
+            return "X"
+        elif num > 10 and num < 40:
+            return "X"+self.intToRoman(num - 10)
+        elif num == 40:
+            return "XL"
+        elif num > 40 and num < 50:
+            return "XL"+self.intToRoman(num - 40)
+        elif num == 50:
+            return "L"
+        elif num > 50 and num < 90:
+            return "L" + self.intToRoman(num - 50)
+        elif num == 90:
+            return "XC"
+        elif num > 90 and num < 100:
+            return "XC" + self.intToRoman(num - 90)
+        elif num == 100:
+            return "C"
+        elif num > 100 and num < 400:
+            return "C"+ self.intToRoman(num - 100)
+        elif num == 400:
+            return "CD"
+        elif num > 400 and num < 500:
+            return "CD" + self.intToRoman(num-400)
+        elif num == 500:
+            return "D"
+        elif num > 500 and num < 900:
+            return "D" + self.intToRoman(num - 500)
+        elif num == 900:
+            return "CM"
+        elif num > 900 and num < 1000:
+            return "CM" + self.intToRoman(num - 900)
+        elif num == 1000:
+            return "M"
+        elif num > 1000:
+            return "M" + self.intToRoman(num - 1000)
+```
+
+~~python写代码真是太快了~~
+
+# 14.最长公共前缀
+
+编写一个函数来查找字符串数组中的最长公共前缀。
+
+如果不存在公共前缀，返回空字符串 `""`。
+
+ 
+
+**示例 1：**
+
+```
+输入：strs = ["flower","flow","flight"]
+输出："fl"
+```
+
+解法：先排序，再纵向便利数组，更新最长公共前缀，若最长公共前缀更新为0，则`break`
+
+```python
+class Solution:
+    def longestCommonPrefix(self, strs: List[str]) -> str:
+        if len(strs) == 1:
+            return strs[0]
+        strs.sort(key=lambda x:len(x))
+        prefix = strs[0]
+        i = 1
+        while i < len(strs):
+            for j in range(len(prefix), 0, -1):
+                if prefix == strs[i][:j]:
+                    break
+                else:
+                    prefix = prefix[0:len(prefix)-1]
+                if prefix == "":
+                    return ""
+            i+=1
+        return prefix    
+```
+
+# 68.文本左右对齐
+
+给定一个单词数组 `words` 和一个长度 `maxWidth` ，重新排版单词，使其成为每行恰好有 `maxWidth` 个字符，且左右两端对齐的文本。
+
+你应该使用 “**贪心算法**” 来放置给定的单词；也就是说，尽可能多地往每行中放置单词。必要时可用空格 `' '` 填充，使得每行恰好有 *maxWidth* 个字符。
+
+要求尽可能均匀分配单词间的空格数量。如果某一行单词间的空格不能均匀分配，则左侧放置的空格数要多于右侧的空格数。
+
+文本的最后一行应为左对齐，且单词之间不插入**额外的**空格。
+
+**注意:**
+
+- 单词是指由非空格字符组成的字符序列。
+- 每个单词的长度大于 0，小于等于 *maxWidth*。
+- 输入单词数组 `words` 至少包含一个单词。
+
+ 
+
+**示例 1:**
+
+```
+输入: words = ["This", "is", "an", "example", "of", "text", "justification."], maxWidth = 16
+输出:
+[
+   "This    is    an",
+   "example  of text",
+   "justification.  "
+]
+```
+
+模拟这个过程
+
+```python
+class Solution:
+    def fullJustify(self, words: List[str], maxWidth: int) -> List[str]:
+        result = [""]
+        while len(words) > 0:
+            if len(result[-1]) == 0:
+                result[-1] += words.pop(0)
+                continue        
+            elif len(result[-1]) + len(words[0]) + 1 > maxWidth:
+                if " " in result[-1]:
+                    spacenum = maxWidth - len(result[-1])
+                    j = 0
+                    while(spacenum > 0):
+                        j = j%len(result[-1])
+                        if result[-1][j] == " ":
+                            result[-1] = result[-1][:j] + " " + result[-1][j:]
+                            while result[-1][j] == " ":
+                                j += 1
+                                j = j%len(result[-1])
+                            spacenum -= 1
+                            continue
+                        else:
+                            j += 1
+                else:
+                    spacenum = maxWidth - len(result[-1])
+                    result[-1] += " "*spacenum
+                result.append("")
+                continue
+            else:
+                result[-1] += " " + words.pop(0)
+                continue
+        spacenum = maxWidth - len(result[-1])
+        result[-1] += " "*spacenum    
+        return result
+```
+
+# 392.判断字序列
+
+给定字符串 **s** 和 **t** ，判断 **s** 是否为 **t** 的子序列。
+
+字符串的一个子序列是原始字符串删除一些（也可以不删除）字符而不改变剩余字符相对位置形成的新字符串。（例如，`"ace"`是`"abcde"`的一个子序列，而`"aec"`不是）。
+
+**进阶：**
+
+如果有大量输入的 S，称作 S1, S2, ... , Sk 其中 k >= 10亿，你需要依次检查它们是否为 T 的子序列。在这种情况下，你会怎样改变代码？
+
+
+
+zz解法：双指针遍历即可，贪心的匹配`t`靠前的字符
+
+```python
+class Solution:
+    def isSubsequence(self, s: str, t: str) -> bool:
+        i = 0
+        j = 0
+        while(i<len(s) and j < len(t)):
+            if s[i] == t[j]:
+                i += 1
+                j += 1
+                continue
+            j += 1
+        if i == len(s):
+            return True
+        return False
+```
+
+# 11.盛最多水的容器
+
+给定一个长度为 `n` 的整数数组 `height` 。有 `n` 条垂线，第 `i` 条线的两个端点是 `(i, 0)` 和 `(i, height[i])` 。
+
+找出其中的两条线，使得它们与 `x` 轴共同构成的容器可以容纳最多的水。
+
+返回容器可以储存的最大水量。
+
+**说明：**你不能倾斜容器。
+
+ 
+
+**示例 1：**
+
+![img](./assets/question_11.jpg)
+
+```
+输入：[1,8,6,2,5,4,8,3,7]
+输出：49 
+解释：图中垂直线代表输入数组 [1,8,6,2,5,4,8,3,7]。在此情况下，容器能够容纳水（表示为蓝色部分）的最大值为 49。
+```
+
+zz解法1：暴力
+
+将可能出现的下标组合列举出来，再以盛水量（` min(height[x[0]], height[x[1]])*(x[1]-x[0])`）进行关键词排序
+
+```py
+class Solution:
+    def maxArea(self, height: List[int]) -> int:
+        indexlis = [[i,j] for i in range(len(height)-1) for j in range(i+1,len(height))]
+        indexlis.sort(reverse=True,key=lambda x: min(height[x[0]], height[x[1]])*(x[1]-x[0]))
+        return min(height[indexlis[0][0]], height[indexlis[0][1]])*(indexlis[0][1] - indexlis[0][0])
+```
+
+结果：**Memory Limit Exceeded** :joy:
+
+zz解法2：暴力
+
+```py
+class Solution:
+    def maxArea(self, height: List[int]) -> int:
+        maxarea = 0
+        for i in range(len(height)-1):
+            for j in range(i+1, len(height)):
+                maxarea = max(min(height[i], height[j])*(j-i), maxarea)
+        return maxarea
+```
+
+结果：**Time Limit Exceeded** :joy:
+
+官解：双指针
+
+ 初始双指针指向数组两端，每次计算当前双指针指向的容器边界所对应的面积后，**移动数值较小的双指针**（向数组中间移动），此过程中计算出的最大面积即为所求。
+
+证明：本质是一种贪心算法
+
+由于容器的大小由宽度和较小的容器边界决定，考虑初始状态（双指针在数组两端），此时如果移动较大数值的指针的话（无论移动多少），那么容器的容量**不可能**再增加了。如果移动较小数值指针的话，那么容器的容量则**有可能**增加。那么我们只需要每次选择有可能增加容器容量的移动方式，即，移动较小数值的指针，在移动的过程中一定能找到最大的容量。
+
+~~贪心算法的证明一直以来都是鼠鼠的心病~~ 
+
+> 严谨的证明见官网：[11. 盛最多水的容器 - 力扣（LeetCode）](https://leetcode.cn/problems/container-with-most-water/solutions/207215/sheng-zui-duo-shui-de-rong-qi-by-leetcode-solution/?source=vscode)
+
+```py
+class Solution:
+    def maxArea(self, height: List[int]) -> int:
+        maxarea = 0
+        i = 0
+        j = len(height) - 1
+        while(i < j):
+            maxarea = max(min(height[i], height[j])*(j-i), maxarea)
+            if height[i] > height[j]:
+                j -= 1
+            else:
+                i += 1
+        return maxarea
 ```
 
