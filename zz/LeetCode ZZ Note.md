@@ -983,15 +983,76 @@ class Solution:
         return maxarea
 ```
 
-# 209.长度最小的子数组
 
-给定一个含有 `n` 个正整数的数组和一个正整数 `target` **。**
+# 15.三数之和
 
-找出该数组中满足其总和大于等于 `target` 的长度最小的 **子数组** `[numsl, numsl+1, ..., numsr-1, numsr]` ，并返回其长度**。**如果不存在符合条件的子数组，返回 `0` 。
+给你一个整数数组 `nums` ，判断是否存在三元组 `[nums[i], nums[j], nums[k]]` 满足 `i != j`、`i != k` 且 `j != k` ，同时还满足 `nums[i] + nums[j] + nums[k] == 0` 。请你返回所有和为 `0` 且不重复的三元组。
+
+**注意：**答案中不可以包含重复的三元组。
 
  
 
 **示例 1：**
+
+```
+输入：nums = [-1,0,1,2,-1,-4]
+输出：[[-1,-1,2],[-1,0,1]]
+解释：
+nums[0] + nums[1] + nums[2] = (-1) + 0 + 1 = 0 。
+nums[1] + nums[2] + nums[4] = 0 + 1 + (-1) = 0 。
+nums[0] + nums[3] + nums[4] = (-1) + 2 + (-1) = 0 。
+不同的三元组是 [-1,0,1] 和 [-1,-1,2] 。
+注意，输出的顺序和三元组的顺序并不重要。
+```
+
+
+
+zz解法：双指针
+
+先对数组nums进行排序。
+
+不失一般性，设 $i<j<k$ ，对 $i(0\le i \le \text{len}(nums)-2)$ 进行遍历，然后对 $j$ 和 $k$ 使用双指针进行遍历，总时间复杂度为 $O(n^2)$
+
+```py
+class Solution:
+    def threeSum(self, nums: List[int]) -> List[List[int]]:
+        nums.sort()
+        if nums[0] >= 0:
+            if nums[-1] == 0:
+                return [[0,0,0]]
+            else:
+                return []
+        result = []
+        for i in range(len(nums)-2):
+            if i > 0 and nums[i] == nums[i-1]:
+                continue
+            j = i + 1
+            k = len(nums)-1
+            while j < k:
+                if nums[i] + nums[j] + nums[k] == 0:
+                    result.append([nums[i], nums[j], nums[k]])
+                    j += 1
+                    while j<k and nums[j]==nums[j-1]:
+                        j += 1
+                    k -= 1
+                    while j<k and nums[k] == nums[k+1]:
+                        k -= 1
+                elif nums[i] + nums[j] + nums[k] > 0:
+                    k -= 1
+                    while j<k and nums[k] == nums[k+1]:
+                        k -= 1
+                else:
+                    j += 1
+                    while j<k and nums[j]==nums[j-1]:
+                        j += 1
+        return result
+```
+
+# 209.长度最小的子数组
+
+给定一个含有 `n` 个正整数的数组和一个正整数 `target`.找出该数组中满足其总和大于等于 `target` 的长度最小的 **子数组** `[numsl, numsl+1, ..., numsr-1, numsr]` ，并返回其长度**。**如果不存在符合条件的子数组，返回 `0` 。
+
+
 
 ```
 输入：target = 7, nums = [2,3,1,2,4,3]
@@ -1031,4 +1092,3 @@ class Solution:
                     numsum += nums[j]
         return minlen
 ```
-
