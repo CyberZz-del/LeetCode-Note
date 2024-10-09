@@ -1092,3 +1092,49 @@ class Solution:
                     numsum += nums[j]
         return minlen
 ```
+
+# 3.无重复字符的最长字串
+
+给定一个字符串 `s` ，请你找出其中不含有重复字符的 **最长 子串** 的长度。
+
+ 
+
+**示例 1:**
+
+```
+输入: s = "abcabcbb"
+输出: 3 
+解释: 因为无重复字符的最长子串是 "abc"，所以其长度为 3。
+```
+
+
+
+- zz解法：滑动窗口
+
+  当右窗口下一个字符不在窗口内时，移动右窗口，反之，移动左窗口
+
+  在此过程中维护一个哈希集合 `strset` ，用于在O(1)时间内判断字符是否在窗口内
+
+  ```py
+  class Solution:
+      def lengthOfLongestSubstring(self, s: str) -> int:
+          if len(s) == 1:
+              return 1
+          elif len(s) == 0:
+              return 0
+          i = j = 0
+          maxlen = 0
+          strset = set()
+          strset.add(s[0])
+          while i < len(s) and j < len(s):
+              if j == len(s) - 1 or s[j+1] in strset:
+                  strset.remove(s[i])
+                  i += 1
+                  maxlen = max(maxlen, j-i+1)
+              elif s[j+1] not in strset:
+                  j += 1
+                  strset.add(s[j])
+                  maxlen = max(maxlen, j-i+1)
+          return maxlen  
+  ```
+
