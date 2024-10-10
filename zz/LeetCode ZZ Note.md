@@ -183,7 +183,7 @@ class Solution:
         return jump
 ```
 
-
+---
 
 # 380.O(1)时间插入，删除，获取随机元素
 
@@ -244,6 +244,8 @@ class RandomizedSet:
         return choice(self.nums) #O(1)时间内获取--数组
 ```
 
+---
+
 # 238.除自身以外数组的乘积
 
 给你一个整数数组 `nums`，返回 数组 `answer` ，其中 `answer[i]` 等于 `nums` 中除 `nums[i]` 之外其余各元素的乘积 。
@@ -299,6 +301,8 @@ class Solution:
         return answer
 
 ```
+
+---
 
 # 134.加油站
 
@@ -360,6 +364,8 @@ class Solution:
         return -1
 ```
 
+---
+
 # 135.分发糖果
 
 `n` 个孩子站成一排。给你一个整数数组 `ratings` 表示每个孩子的评分。
@@ -412,6 +418,8 @@ class Solution:
             lis[i] = max(left[i],right[i])
         return sum(lis)
 ```
+
+---
 
 # 42.接雨水
 
@@ -632,6 +640,8 @@ class Solution:
 >         n += 1
 > ```
 
+---
+
 # 13.罗马数字转整数
 
 七个不同的符号代表罗马数字，其值如下：
@@ -708,6 +718,8 @@ class Solution:
         return num
 ```
 
+---
+
 # 12.整数转罗马数字
 
 同上
@@ -771,6 +783,8 @@ class Solution:
 
 ~~python写代码真是太快了~~
 
+---
+
 # 14.最长公共前缀
 
 编写一个函数来查找字符串数组中的最长公共前缀。
@@ -807,6 +821,8 @@ class Solution:
             i+=1
         return prefix    
 ```
+
+---
 
 # 68.文本左右对齐
 
@@ -876,6 +892,8 @@ class Solution:
         return result
 ```
 
+---
+
 # 392.判断字序列
 
 给定字符串 **s** 和 **t** ，判断 **s** 是否为 **t** 的子序列。
@@ -905,6 +923,8 @@ class Solution:
             return True
         return False
 ```
+
+---
 
 # 11.盛最多水的容器
 
@@ -983,6 +1003,7 @@ class Solution:
         return maxarea
 ```
 
+---
 
 # 15.三数之和
 
@@ -1048,6 +1069,8 @@ class Solution:
         return result
 ```
 
+---
+
 # 209.长度最小的子数组
 
 给定一个含有 `n` 个正整数的数组和一个正整数 `target`.找出该数组中满足其总和大于等于 `target` 的长度最小的 **子数组** `[numsl, numsl+1, ..., numsr-1, numsr]` ，并返回其长度**。**如果不存在符合条件的子数组，返回 `0` 。
@@ -1092,6 +1115,8 @@ class Solution:
                     numsum += nums[j]
         return minlen
 ```
+
+---
 
 # 3.无重复字符的最长字串
 
@@ -1138,3 +1163,118 @@ class Solution:
           return maxlen  
   ```
 
+> *set* 对象是由具有唯一性的 [hashable](https://docs.python.org/zh-cn/3/glossary.html#term-hashable) 对象所组成的无序多项集。 常见的用途包括成员检测、从序列中去除重复项以及数学中的集合类计算，例如交集、并集、差集与对称差集等等。 （关于其他容器对象请参看 [`dict`](https://docs.python.org/zh-cn/3/library/stdtypes.html#dict), [`list`](https://docs.python.org/zh-cn/3/library/stdtypes.html#list) 与 [`tuple`](https://docs.python.org/zh-cn/3/library/stdtypes.html#tuple) 等内置类，以及 [`collections`](https://docs.python.org/zh-cn/3/library/collections.html#module-collections) 模块。）
+>
+> 与其他多项集一样，集合也支持 `x in set`, `len(set)` 和 `for x in set`。 作为一种无序的多项集，集合并不记录元素位置或插入顺序。 相应地，集合不支持索引、切片或其他序列类的操作。
+>
+> 目前有两种内置集合类型，[`set`](https://docs.python.org/zh-cn/3/library/stdtypes.html#set) 和 [`frozenset`](https://docs.python.org/zh-cn/3/library/stdtypes.html#frozenset)。 [`set`](https://docs.python.org/zh-cn/3/library/stdtypes.html#set) 类型是可变的 --- 其内容可以使用 `add()` 和 `remove()` 这样的方法来改变。 由于是可变类型，它没有哈希值，且不能被用作字典的键或其他集合的元素。 [`frozenset`](https://docs.python.org/zh-cn/3/library/stdtypes.html#frozenset) 类型是不可变并且为 [hashable](https://docs.python.org/zh-cn/3/glossary.html#term-hashable) --- 其内容在被创建后不能再改变；因此它可以被用作字典的键或其他集合的元素。
+>
+> 除了可以使用 [`set`](https://docs.python.org/zh-cn/3/library/stdtypes.html#set) 构造器，非空的 set (不是 frozenset) 还可以通过将以逗号分隔的元素列表包含于花括号之内来创建，例如: `{'jack', 'sjoerd'}`。
+
+---
+
+# 30.串联所有单词的字串
+
+给定一个字符串 `s` 和一个字符串数组 `words`**。** `words` 中所有字符串 **长度相同**。
+
+ `s` 中的 **串联子串** 是指一个包含 `words` 中所有字符串以任意顺序排列连接起来的子串。
+
+- 例如，如果 `words = ["ab","cd","ef"]`， 那么 `"abcdef"`， `"abefcd"`，`"cdabef"`， `"cdefab"`，`"efabcd"`， 和 `"efcdab"` 都是串联子串。 `"acdbef"` 不是串联子串，因为他不是任何 `words` 排列的连接。
+
+返回所有串联子串在 `s` 中的开始索引。你可以以 **任意顺序** 返回答案。
+
+ 
+
+**示例 1：**
+
+```
+输入：s = "barfoothefoobarman", words = ["foo","bar"]
+输出：[0,9]
+解释：因为 words.length == 2 同时 words[i].length == 3，连接的子字符串的长度必须为 6。
+子串 "barfoo" 开始位置是 0。它是 words 中以 ["bar","foo"] 顺序排列的连接。
+子串 "foobar" 开始位置是 9。它是 words 中以 ["foo","bar"] 顺序排列的连接。
+输出顺序无关紧要。返回 [9,0] 也是可以的。
+```
+
+
+
+- zz解法：
+
+滑动窗口，但不全是滑动窗口
+
+将`words`中的内容存入哈希表`wordset`，键为单词字符串，值为该单词在`words`中的数量。当右窗口指向的单词在 `wordset`中时，右窗口移动相当于单词长度的距离且单词在`wordset`中对应的词减1；当右窗口不在`wordset`中时， 左窗口移动一位，右窗口和左窗口对齐，重置`wordset`；当左右窗口之间距离达到`wordlen*len(words)`, 说明找到了一个符合条件的下标
+
+设s长度为ls，words长度为lw，则最坏情况下时间复杂度为 $O(ls\times lw)$ 
+
+第21行的 `j = i` 使得一个变态的coner case超时了（真恶心啊
+
+ ```py
+ class Solution:
+     def findSubstring(self, s: str, words: List[str]) -> List[int]:
+         wordlen = len(words[0])
+         n = wordlen * len(words)
+         ilis = []
+         i = j = 0
+         wordset = Counter(words)
+         while i<len(s) and j + wordlen  <= len(s):
+             if s[j:j+wordlen] in wordset and wordset[s[j:j+wordlen]] > 0:
+                 wordset[s[j:j+wordlen]] -= 1
+                 j += wordlen
+             else:
+                 i+=1
+                 j = i
+                 wordset = Counter(words)
+             if j < i :
+                 j = i 
+             if j - i == n:
+                 ilis.append(i)
+                 i += 1
+                 j = i
+                 wordset = Counter(words)
+         return ilis
+ ```
+
+- 官解
+
+思路
+
+此题是「438. 找到字符串中所有字母异位词」的进阶版。不同的是第 438 题的元素是字母，而此题的元素是单词。可以用类似「438. 找到字符串中所有字母异位词的官方题解」的方法二的滑动窗口来解这题。
+
+记 words 的长度为 m，words 中每个单词的长度为 n，s 的长度为 ls。首先需要将 s 划分为单词组，每个单词的大小均为 n （首尾除外）。这样的划分方法有 n 种，即先删去前 i （i=0∼n−1）个字母后，将剩下的字母进行划分，如果末尾有不到 n 个字母也删去。对这 n 种划分得到的单词数组分别使用滑动窗口对 words 进行类似于「字母异位词」的搜寻。
+
+划分成单词组后，一个窗口包含 s 中前 m 个单词，用一个哈希表 differ 表示窗口中单词频次和 words 中单词频次之差。初始化 differ 时，出现在窗口中的单词，每出现一次，相应的值增加 1，出现在 words 中的单词，每出现一次，相应的值减少 1。然后将窗口右移，右侧会加入一个单词，左侧会移出一个单词，并对 differ 做相应的更新。窗口移动时，若出现 differ 中值不为 0 的键的数量为 0，则表示这个窗口中的单词频次和 words 中单词频次相同，窗口的左端点是一个待求的起始位置。划分的方法有 n 种，做 n 次滑动窗口后，即可找到所有的起始位置。
+
+```py
+class Solution:
+    def findSubstring(self, s: str, words: List[str]) -> List[int]:
+        res = []
+        m, n, ls = len(words), len(words[0]), len(s)
+        for i in range(n):
+            if i + m * n > ls:
+                break
+            differ = Counter()
+            for j in range(m):
+                word = s[i + j * n: i + (j + 1) * n]
+                differ[word] += 1
+            for word in words:
+                differ[word] -= 1
+                if differ[word] == 0:
+                    del differ[word]
+            for start in range(i, ls - m * n + 1, n):
+                if start != i:
+                    word = s[start + (m - 1) * n: start + m * n]
+                    differ[word] += 1
+                    if differ[word] == 0:
+                        del differ[word]
+                    word = s[start - n: start]
+                    differ[word] -= 1
+                    if differ[word] == 0:
+                        del differ[word]
+                if len(differ) == 0:
+                    res.append(start)
+        return res
+```
+
+复杂度分析
+
+时间复杂度：O(ls×n)，其中 ls 是输入 s 的长度，n 是 words 中每个单词的长度。需要做 n 次滑动窗口，每次需要遍历一次 s。
