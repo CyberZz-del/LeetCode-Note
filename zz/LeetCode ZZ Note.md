@@ -1278,3 +1278,73 @@ class Solution:
 复杂度分析
 
 时间复杂度：O(ls×n)，其中 ls 是输入 s 的长度，n 是 words 中每个单词的长度。需要做 n 次滑动窗口，每次需要遍历一次 s。
+
+---
+
+# 76.最小覆盖子串
+
+
+
+给你一个字符串 `s` 、一个字符串 `t` 。返回 `s` 中涵盖 `t` 所有字符的最小子串。如果 `s` 中不存在涵盖 `t` 所有字符的子串，则返回空字符串 `""` 。
+
+ 
+
+**注意：**
+
+- 对于 `t` 中重复字符，我们寻找的子字符串中该字符数量必须不少于 `t` 中该字符数量。
+- 如果 `s` 中存在这样的子串，我们保证它是唯一的答案。
+
+ 
+
+**示例 1：**
+
+```
+输入：s = "ADOBECODEBANC", t = "ABC"
+输出："BANC"
+解释：最小覆盖子串 "BANC" 包含来自字符串 t 的 'A'、'B' 和 'C'。
+```
+
+
+
+- zz解法：滑动窗口
+
+维护哈希表 `dictt` ，`dictt` 中为窗口中目标字符和字符串 `t` 的字符数量之差；维护变量 `flag` ，`flag` 为窗口中数量足够的目标字符的数量，表现为`dictt` 中值小于等于0的键的数量。
+
+当 `flag > 0` 时，移动右窗口，如果移入窗口内的字符是目标字符就对 `dictt` 和 `flag` 做处理；当 `flag == 0` 时，移动左窗口，如果移出窗口的字符是目标字符就对`dictt`和`flag`做处理。当 `flag > 0` 且右窗口已经移动到 `s` 的末位，就退出循环。记录循环过程中长度最小的字符串。
+
+```py
+class Solution:
+    def minWindow(self, s: str, t: str) -> str:
+        i = j = 0
+        dictt = Counter(t)
+        minlen = len(s)
+        minlenstr = ""
+        flag = len(set(t));
+        while i<len(s) and j<len(s)+1:
+            if flag > 0 and j == len(s):#j已经无法移动
+                break
+            if flag > 0 and s[j] in dictt:
+                dictt[s[j]] -= 1
+                if dictt[s[j]] == 0:#有一个字符满足了数量条件
+                    flag -= 1
+                j+=1
+            elif flag > 0 and s[j] not in dictt:
+                j+=1
+            if flag == 0 and s[i] in dictt:#只需在左窗口移动时尝试更新minlen和minlenstr即可
+                if j - i <= minlen:
+                    minlenstr = s[i:j]
+                    minlen = j-i
+                dictt[s[i]] += 1
+                if dictt[s[i]] == 1:
+                    flag += 1
+                i+=1
+            elif flag == 0 and s[i] not in dictt:
+                if j - i <= minlen:
+                    minlenstr = s[i:j]
+                    minlen = j-i
+                i+=1
+        return minlenstr
+```
+
+
+
