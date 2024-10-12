@@ -1348,3 +1348,116 @@ class Solution:
 
 
 
+---
+
+# 36.有效的数独
+
+请你判断一个 `9 x 9` 的数独是否有效。只需要 **根据以下规则** ，验证已经填入的数字是否有效即可。
+
+1. 数字 `1-9` 在每一行只能出现一次。
+2. 数字 `1-9` 在每一列只能出现一次。
+3. 数字 `1-9` 在每一个以粗实线分隔的 `3x3` 宫内只能出现一次。（请参考示例图）
+
+ 
+
+**注意：**
+
+- 一个有效的数独（部分已被填充）不一定是可解的。
+- 只需要根据以上规则，验证已经填入的数字是否有效即可。
+- 空白格用 `'.'` 表示。
+
+ 
+
+**示例 1：**
+
+![img](./assets/250px-sudoku-by-l2g-20050714svg.png)
+
+```
+输入：board = 
+[["5","3",".",".","7",".",".",".","."]
+,["6",".",".","1","9","5",".",".","."]
+,[".","9","8",".",".",".",".","6","."]
+,["8",".",".",".","6",".",".",".","3"]
+,["4",".",".","8",".","3",".",".","1"]
+,["7",".",".",".","2",".",".",".","6"]
+,[".","6",".",".",".",".","2","8","."]
+,[".",".",".","4","1","9",".",".","5"]
+,[".",".",".",".","8",".",".","7","9"]]
+输出：true
+```
+
+- zz解法：哈希表
+
+用哈希表储存遍历到的数字，共需要9+9+1=19张表
+
+```py
+class Solution:
+    def isValidSudoku(self, board: List[List[str]]) -> bool:
+        liss = [set() for _ in range(9)]
+        lisd = [set() for _ in range(9)]
+        for i in range(9):
+            se = set()
+            for j in range(9):
+                if board[i][j] == '.':
+                    continue
+                if board[i][j] not in se and board[i][j] not in liss[j]\
+                    and board[i][j] not in lisd[3*(i//3)+j//3]:
+                    se.add(board[i][j])
+                    liss[j].add(board[i][j])
+                    lisd[3*(i//3)+j//3].add(board[i][j])
+                else:
+                    return False
+        return True     
+```
+
+---
+
+# 54.螺旋矩阵
+
+给你一个 `m` 行 `n` 列的矩阵 `matrix` ，请按照 **顺时针螺旋顺序** ，返回矩阵中的所有元素。
+
+ 
+
+**示例 1：**
+
+![img](./assets/spiral1.jpg)
+
+```
+输入：matrix = [[1,2,3],[4,5,6],[7,8,9]]
+输出：[1,2,3,6,9,8,7,4,5]
+```
+
+
+
+- zz解法：哈希集合记录已经遍历到的序列元组，以便用O(1)时间查询某个位置是否被遍历过，如果遍历过程碰壁（遍历到矩阵边缘或遍历到已经遍历过的位置），就顺时针改变遍历方向。
+
+```py
+class Solution:
+    def spiralOrder(self, matrix: List[List[int]]) -> List[int]:
+        index = [0,0]
+        lis = [(0,1), (1,0), (0,-1), (-1,0)] #预设的遍历方向
+        index_lis = 0 #当前遍历方向
+        i = 1
+        result = []
+        result.append(matrix[0][0]) #将第一个元素加入结果列表
+        hashset = set()
+        hashset.add((0,0))#将第一个序列元组加入哈希集合
+        n = len(matrix) 
+        m = len(matrix[0])
+        while i < n*m:
+            if index[0]+lis[index_lis][0] < n and index[0]+lis[index_lis][0]>=0\
+            and index[1]+lis[index_lis][1] < m and index[1]+lis[index_lis][1]>=0\
+            and (index[0]+lis[index_lis][0],index[1]+lis[index_lis][1]) not in hashset:
+                index[0] = index[0]+lis[index_lis][0]
+                index[1] = index[1]+lis[index_lis][1]
+                result.append(matrix[index[0]][index[1]])
+                hashset.add((index[0], index[1])) 
+                print((index[0], index[1]))
+                i += 1
+
+            else:
+                index_lis = (index_lis+1)%4 #“碰壁了”，顺时针改变遍历方向
+        return result
+
+```
+
