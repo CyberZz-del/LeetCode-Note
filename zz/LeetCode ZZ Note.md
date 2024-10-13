@@ -1461,3 +1461,65 @@ class Solution:
 
 ```
 
+---
+
+# 48.旋转图像
+
+给定一个 *n* × *n* 的二维矩阵 `matrix` 表示一个图像。请你将图像顺时针旋转 90 度。
+
+你必须在**[ 原地](https://baike.baidu.com/item/原地算法)** 旋转图像，这意味着你需要直接修改输入的二维矩阵。**请不要** 使用另一个矩阵来旋转图像。
+
+ 
+
+**示例 1：**
+
+![img](./assets/mat1.jpg)
+
+```
+输入：matrix = [[1,2,3],[4,5,6],[7,8,9]]
+输出：[[7,4,1],[8,5,2],[9,6,3]]
+```
+
+- zz解法：旋转后的矩阵与旋转前的矩阵关系为 `matrix_after[i][j] = matrix_before[n-1-j][i]`
+
+  分奇偶性讨论，一次使四个旋转位置的元素依次交换（利用python特性
+
+```py
+class Solution:
+    def rotate(self, matrix: List[List[int]]) -> None:
+        """
+        Do not return anything, modify matrix in-place instead.
+        """
+        n = len(matrix)
+        for i in range(n//2):
+            for j in range(n//2):
+                matrix[i][j], matrix[j][n-1-i], matrix[n-1-i][n-1-j], matrix[n-1-j][i]\
+                = matrix[n-1-j][i], matrix[i][j], matrix[j][n-1-i], matrix[n-1-i][n-1-j]
+        if n%2 == 0:
+            return
+        else:
+            for i in range(n//2):
+                j = n//2
+                matrix[i][j], matrix[j][n-1-i], matrix[n-1-i][n-1-j], matrix[n-1-j][i]\
+                = matrix[n-1-j][i], matrix[i][j], matrix[j][n-1-i], matrix[n-1-i][n-1-j]
+            return
+```
+
+- 官解：[用翻转代替旋转](https://leetcode.cn/problems/rotate-image/solutions/526980/xuan-zhuan-tu-xiang-by-leetcode-solution-vu3m/)
+
+  先水平翻转，再根据主对角线翻转得到结果：
+
+```py
+class Solution:
+    def rotate(self, matrix: List[List[int]]) -> None:
+        n = len(matrix)
+        # 水平翻转
+        for i in range(n // 2):
+            for j in range(n):
+                matrix[i][j], matrix[n - i - 1][j] = matrix[n - i - 1][j], matrix[i][j]
+        # 主对角线翻转
+        for i in range(n):
+            for j in range(i):
+                matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+```
+
