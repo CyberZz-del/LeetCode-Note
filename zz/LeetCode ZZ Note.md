@@ -1523,3 +1523,46 @@ class Solution:
                 matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
 ```
 
+---
+
+# 73.矩阵置零
+
+给定一个 `*m* x *n*` 的矩阵，如果一个元素为 **0** ，则将其所在行和列的所有元素都设为 **0** 。请使用 **[原地](http://baike.baidu.com/item/原地算法)** 算法**。**
+
+ 
+
+**示例 1：**
+
+![img](./assets/mat1-1728914826996-1.jpg)
+
+```
+输入：matrix = [[1,1,1],[1,0,1],[1,1,1]]
+输出：[[1,0,1],[0,0,0],[1,0,1]]
+```
+
+- zz解法：遍历 使用哈希集合储存需要置零的行和列 遍历结束后再遍历哈希集合 依次置零
+
+```py
+class Solution:
+    def setZeroes(self, matrix: List[List[int]]) -> None:
+        """
+        Do not return anything, modify matrix in-place instead.
+        """
+        hashset1 = set()
+        hashset2 = set()
+        for i in range(len(matrix)):
+            flag = False
+            for j in range(len(matrix[0])):
+                if matrix[i][j] == 0 :
+                    hashset1.add(j)
+                    flag = True                    
+            if flag:
+                hashset2.add(i)
+        for j in hashset1:
+            for k in range(len(matrix)):
+                matrix[k][j] = 0
+        for i in hashset2:
+            for k in range(len(matrix[0])):
+                matrix[i][k] = 0
+```
+
