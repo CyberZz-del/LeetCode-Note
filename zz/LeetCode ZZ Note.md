@@ -1566,3 +1566,60 @@ class Solution:
                 matrix[i][k] = 0
 ```
 
+---
+
+# 289.生命游戏
+
+根据 [百度百科](https://baike.baidu.com/item/生命游戏/2926434?fr=aladdin) ， **生命游戏** ，简称为 **生命** ，是英国数学家约翰·何顿·康威在 1970 年发明的细胞自动机。
+
+给定一个包含 `m × n` 个格子的面板，每一个格子都可以看成是一个细胞。每个细胞都具有一个初始状态： `1` 即为 **活细胞** （live），或 `0` 即为 **死细胞** （dead）。每个细胞与其八个相邻位置（水平，垂直，对角线）的细胞都遵循以下四条生存定律：
+
+1. 如果活细胞周围八个位置的活细胞数少于两个，则该位置活细胞死亡；
+2. 如果活细胞周围八个位置有两个或三个活细胞，则该位置活细胞仍然存活；
+3. 如果活细胞周围八个位置有超过三个活细胞，则该位置活细胞死亡；
+4. 如果死细胞周围正好有三个活细胞，则该位置死细胞复活；
+
+下一个状态是通过将上述规则同时应用于当前状态下的每个细胞所形成的，其中细胞的出生和死亡是同时发生的。给你 `m x n` 网格面板 `board` 的当前状态，返回下一个状态。
+
+ 
+
+**示例 1：**
+
+![img](./assets/grid1.jpg)
+
+```
+输入：board = [[0,1,0],[0,0,1],[1,1,1],[0,0,0]]
+输出：[[0,0,0],[1,0,1],[0,1,1],[0,1,0]]
+```
+
+- zz解法：遍历矩阵，用哈希集合存放需要改变的位置下标，会引发状态改变的规则为第1，3，4条
+
+```py
+class Solution:
+    def gameOfLife(self, board: List[List[int]]) -> None:
+        """
+        Do not return anything, modify board in-place instead.
+        """
+        hashset1 = set()
+        n = len(board)
+        m = len(board[0])
+        lis = [(-1,0), (1,0), (0,1), (0,-1), (1,1), (1,-1), (-1,1), (-1,-1)]
+        for i in range(len(board)):
+            for j in range(len(board[0])):
+                countlive = 0
+                for ki, kj in lis:
+                    if i+ki >= n or i+ki < 0\
+                    or j+kj >= m or j+kj < 0:
+                        continue
+                    else:
+                        if board[i+ki][j+kj] == 1:
+                            countlive += 1
+                if board[i][j] == 0 and countlive == 3:
+                    hashset1.add((i,j))
+                elif board[i][j] == 1 and (countlive < 2 or countlive > 3):
+                    hashset1.add((i,j))
+
+        for i, j in hashset1:
+            board[i][j] = int(not board[i][j])
+```
+
