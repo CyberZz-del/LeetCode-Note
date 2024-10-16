@@ -1623,3 +1623,81 @@ class Solution:
             board[i][j] = int(not board[i][j])
 ```
 
+---
+
+# 383.赎金信
+
+给你两个字符串：`ransomNote` 和 `magazine` ，判断 `ransomNote` 能不能由 `magazine` 里面的字符构成。
+
+如果可以，返回 `true` ；否则返回 `false` 。
+
+`magazine` 中的每个字符只能在 `ransomNote` 中使用一次。
+
+ 
+
+**示例 1：**
+
+```
+输入：ransomNote = "a", magazine = "b"
+输出：false
+```
+
+
+
+- zz解法：哈希表Counter
+
+```py
+class Solution:
+    def canConstruct(self, ransomNote: str, magazine: str) -> bool:
+        hashcounter = Counter(magazine)
+        for char in ransomNote:
+            if hashcounter[char] == 0:
+                return False
+            else:
+                hashcounter[char] -= 1
+                continue
+        return True
+```
+
+---
+
+# 205.同构字符串
+
+给定两个字符串 `s` 和 `t` ，判断它们是否是同构的。
+
+如果 `s` 中的字符可以按某种映射关系替换得到 `t` ，那么这两个字符串是同构的。
+
+每个出现的字符都应当映射到另一个字符，同时不改变字符的顺序。不同字符不能映射到同一个字符上，相同字符只能映射到同一个字符上，字符可以映射到自己本身。
+
+ 
+
+**示例 1:**
+
+```
+输入：s = "egg", t = "add"
+输出：true
+```
+
+
+
+- zz解法：哈希表
+
+  两个哈希表分别记录s到t的映射和t到s的映射，遍历字符串s和t，在遍历过程中检查是否符合一一映射
+
+```py
+class Solution:
+    def isIsomorphic(self, s: str, t: str) -> bool:
+        dic = {}
+        dic1 = {}
+        for i in range(len(s)):
+            if s[i] not in dic and t[i] not in dic1:
+                dic[s[i]] = t[i]
+                dic1[t[i]] = s[i]
+            elif s[i] in dic and t[i] in dic1 and \
+            dic[s[i]] == t[i] and dic1[t[i]] == s[i]:
+                continue
+            else:
+                return False
+        return True 
+```
+
