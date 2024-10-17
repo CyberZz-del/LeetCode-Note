@@ -1701,3 +1701,66 @@ class Solution:
         return True 
 ```
 
+---
+
+# 49.字母异位词分组
+
+给你一个字符串数组，请你将 **字母异位词** 组合在一起。可以按任意顺序返回结果列表。
+
+**字母异位词** 是由重新排列源单词的所有字母得到的一个新单词。
+
+ 
+
+**示例 1:**
+
+```py
+输入: strs = ["eat", "tea", "tan", "ate", "nat", "bat"]
+输出: [["bat"],["nat","tan"],["ate","eat","tea"]]
+```
+
+- zz解法：哈希
+
+  初始化一个空字典 `resultdic` ，字典的键储存可以标识异位字符串的哈希对象，字典的值储存结果列表。
+
+  使用 `Counter` 对象，可保证每个异位字符串的 `Counter(string)` 相同。遍历 `str` ，若 `Counter(string)` 不在字典 `resultdic` 中，则将相应的键值对添加进去；否则，修改相应的键值对的值
+
+  > [!NOTE]
+  >
+  > 注意 `Counter` 对象不是一个 hashable 的对象，要将其转换为 `frozenset` 对象才能作为字典的键。
+
+```py
+class Solution:
+    def groupAnagrams(self, strs: List[str]) -> List[List[str]]:
+        resultdic = {}
+        for i, string in enumerate(strs):
+            fset = frozenset(Counter(string).items())
+            if len(resultdic) == 0 or fset not in resultdic:
+                resultdic[fset] = [string]
+            else:
+                resultdic[fset].append(string)
+        return list(resultdic.values())
+```
+
+- 官解：计数哈希
+
+  由于互为字母异位词的两个字符串包含的字母相同，因此两个字符串中的相同字母出现的次数一定是相同的，故可以将每个字母出现的次数使用字符串表示，作为哈希表的键。
+
+  由于字符串只包含小写字母，因此对于每个字符串，**可以使用长度为 26 的数组记录每个字母出现的次数**。需要注意的是，在使用数组作为哈希表的键时，不同语言的支持程度不同，因此不同语言的实现方式也不同。
+
+```py
+class Solution:
+    def groupAnagrams(self, strs: List[str]) -> List[List[str]]:
+        mp = collections.defaultdict(list)
+
+        for st in strs:
+            counts = [0] * 26
+            for ch in st:
+                counts[ord(ch) - ord("a")] += 1
+            # 需要将 list 转换成 tuple 才能进行哈希
+            mp[tuple(counts)].append(st)
+        
+        return list(mp.values())
+```
+
+
+
