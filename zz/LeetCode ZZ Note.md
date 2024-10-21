@@ -1938,5 +1938,69 @@ class Solution:
         return result       
 ```
 
+---
 
+# 452.用最少数量的箭引爆气球
+
+有一些球形气球贴在一堵用 XY 平面表示的墙面上。墙面上的气球记录在整数数组 `points` ，其中`points[i] = [xstart, xend]` 表示水平直径在 `xstart` 和 `xend`之间的气球。你不知道气球的确切 y 坐标。
+
+一支弓箭可以沿着 x 轴从不同点 **完全垂直** 地射出。在坐标 `x` 处射出一支箭，若有一个气球的直径的开始和结束坐标为 `x``start`，`x``end`， 且满足  `xstart ≤ x ≤ x``end`，则该气球会被 **引爆** 。可以射出的弓箭的数量 **没有限制** 。 弓箭一旦被射出之后，可以无限地前进。
+
+给你一个数组 `points` ，*返回引爆所有气球所必须射出的 **最小** 弓箭数* 。
+
+ 
+
+**示例 1：**
+
+```
+输入：points = [[10,16],[2,8],[1,6],[7,12]]
+输出：2
+解释：气球可以用2支箭来爆破:
+-在x = 6处射出箭，击破气球[2,8]和[1,6]。
+-在x = 11处发射箭，击破气球[10,16]和[7,12]。
+```
+
+zz解法：排序加贪心
+
+先将 `points` 数组按第一个分量降序排序，然后进行贪心模拟：
+
+维护一个“可以射箭的区间” `p` ，起始的 `p` 就是 `points` 顶部的区间。将顶部的区间弹出，表示气球被射爆了（:laughing:)。循环考察新的 `point` 顶部区间，如果与 `p` 有重叠，则更新 `p` ，并且弹出，直到 `point` 顶部区间与 `p` 不重合。
+
+循环上面的过程，维护射出箭的数量，每一次循环都射出一只箭，直到`points` 为空。
+
+时间复杂度：$O(n\log n)$，排序时间为 $O(n\log n)$，后续循环的时间为 $O(n)$ ，可忽略
+
+```py
+class Solution:
+    def findMinArrowShots(self, points: List[List[int]]) -> int:
+        points.sort(key= lambda x: x[0], reverse=True)#排序
+        num = 0
+        while len(points) > 0:
+            p = points[-1]
+            while len(points) > 0 and p[0] <= p[1] and points[-1][0] <= p[1]:
+                p[0] = max(p[0], points[-1][0])#更新p的范围
+                p[1] = min(p[1], points[-1][1])
+                points.pop()
+            num += 1
+        return num
+```
+
+官解：排序加贪心
+
+按气球的右边界排序，依次考察气球的右边界。
+
+```py
+class Solution:
+    def findMinArrowShots(self, points: List[List[int]]) -> int:
+        if not points:
+            return 0
+        points.sort(key=lambda balloon: balloon[1])
+        pos = points[0][1]
+        ans = 1
+        for balloon in points:
+            if balloon[0] > pos:
+                pos = balloon[1]
+                ans += 1
+        return ans
+```
 
