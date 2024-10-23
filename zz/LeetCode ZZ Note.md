@@ -183,7 +183,7 @@ class Solution:
         return jump
 ```
 
-
+---
 
 # 380.O(1)时间插入，删除，获取随机元素
 
@@ -244,6 +244,8 @@ class RandomizedSet:
         return choice(self.nums) #O(1)时间内获取--数组
 ```
 
+---
+
 # 238.除自身以外数组的乘积
 
 给你一个整数数组 `nums`，返回 数组 `answer` ，其中 `answer[i]` 等于 `nums` 中除 `nums[i]` 之外其余各元素的乘积 。
@@ -299,6 +301,8 @@ class Solution:
         return answer
 
 ```
+
+---
 
 # 134.加油站
 
@@ -360,6 +364,8 @@ class Solution:
         return -1
 ```
 
+---
+
 # 135.分发糖果
 
 `n` 个孩子站成一排。给你一个整数数组 `ratings` 表示每个孩子的评分。
@@ -412,6 +418,8 @@ class Solution:
             lis[i] = max(left[i],right[i])
         return sum(lis)
 ```
+
+---
 
 # 42.接雨水
 
@@ -632,6 +640,8 @@ class Solution:
 >         n += 1
 > ```
 
+---
+
 # 13.罗马数字转整数
 
 七个不同的符号代表罗马数字，其值如下：
@@ -708,6 +718,8 @@ class Solution:
         return num
 ```
 
+---
+
 # 12.整数转罗马数字
 
 同上
@@ -771,6 +783,8 @@ class Solution:
 
 ~~python写代码真是太快了~~
 
+---
+
 # 14.最长公共前缀
 
 编写一个函数来查找字符串数组中的最长公共前缀。
@@ -807,6 +821,8 @@ class Solution:
             i+=1
         return prefix    
 ```
+
+---
 
 # 68.文本左右对齐
 
@@ -876,6 +892,8 @@ class Solution:
         return result
 ```
 
+---
+
 # 392.判断字序列
 
 给定字符串 **s** 和 **t** ，判断 **s** 是否为 **t** 的子序列。
@@ -905,6 +923,8 @@ class Solution:
             return True
         return False
 ```
+
+---
 
 # 11.盛最多水的容器
 
@@ -981,5 +1001,1098 @@ class Solution:
             else:
                 i += 1
         return maxarea
+```
+
+---
+
+# 15.三数之和
+
+给你一个整数数组 `nums` ，判断是否存在三元组 `[nums[i], nums[j], nums[k]]` 满足 `i != j`、`i != k` 且 `j != k` ，同时还满足 `nums[i] + nums[j] + nums[k] == 0` 。请你返回所有和为 `0` 且不重复的三元组。
+
+**注意：**答案中不可以包含重复的三元组。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums = [-1,0,1,2,-1,-4]
+输出：[[-1,-1,2],[-1,0,1]]
+解释：
+nums[0] + nums[1] + nums[2] = (-1) + 0 + 1 = 0 。
+nums[1] + nums[2] + nums[4] = 0 + 1 + (-1) = 0 。
+nums[0] + nums[3] + nums[4] = (-1) + 2 + (-1) = 0 。
+不同的三元组是 [-1,0,1] 和 [-1,-1,2] 。
+注意，输出的顺序和三元组的顺序并不重要。
+```
+
+
+
+zz解法：双指针
+
+先对数组nums进行排序。
+
+不失一般性，设 $i<j<k$ ，对 $i(0\le i \le \text{len}(nums)-2)$ 进行遍历，然后对 $j$ 和 $k$ 使用双指针进行遍历，总时间复杂度为 $O(n^2)$
+
+```py
+class Solution:
+    def threeSum(self, nums: List[int]) -> List[List[int]]:
+        nums.sort()
+        if nums[0] >= 0:
+            if nums[-1] == 0:
+                return [[0,0,0]]
+            else:
+                return []
+        result = []
+        for i in range(len(nums)-2):
+            if i > 0 and nums[i] == nums[i-1]:
+                continue
+            j = i + 1
+            k = len(nums)-1
+            while j < k:
+                if nums[i] + nums[j] + nums[k] == 0:
+                    result.append([nums[i], nums[j], nums[k]])
+                    j += 1
+                    while j<k and nums[j]==nums[j-1]:
+                        j += 1
+                    k -= 1
+                    while j<k and nums[k] == nums[k+1]:
+                        k -= 1
+                elif nums[i] + nums[j] + nums[k] > 0:
+                    k -= 1
+                    while j<k and nums[k] == nums[k+1]:
+                        k -= 1
+                else:
+                    j += 1
+                    while j<k and nums[j]==nums[j-1]:
+                        j += 1
+        return result
+```
+
+---
+
+# 209.长度最小的子数组
+
+给定一个含有 `n` 个正整数的数组和一个正整数 `target`.找出该数组中满足其总和大于等于 `target` 的长度最小的 **子数组** `[numsl, numsl+1, ..., numsr-1, numsr]` ，并返回其长度**。**如果不存在符合条件的子数组，返回 `0` 。
+
+
+
+```
+输入：target = 7, nums = [2,3,1,2,4,3]
+输出：2
+解释：子数组 [4,3] 是该条件下的长度最小的子数组。
+```
+
+
+
+- zz解法：滑动窗口
+
+  维护`numsum`变量, 左右窗口`i, j` ,开始遍历. 
+
+  当`numsum >= target` 时,  左窗口右移, 变量 `numsum` 减少窗口移动的值 `numsum -= nums[i]`
+
+  当`numsum < target` 时, 右窗口右移, 变量`numsum` 增加窗口移动的值 `numsum += nums[i]` 
+
+  取此过程中左右窗口的最近距离
+
+```py
+class Solution:
+    def minSubArrayLen(self, target: int, nums: List[int]) -> int:
+        i = j = 0
+        if sum(nums) < target:
+            return 0
+        minlen = len(nums)
+        numsum = nums[0]
+        while i < len(nums) and j < len(nums):
+            if numsum >= target:
+                minlen = min(minlen, j-i+1)
+                numsum -= nums[i]
+                i+=1
+                nums
+            elif numsum < target:                
+                j+=1
+                if j < len(nums):
+                    numsum += nums[j]
+        return minlen
+```
+
+---
+
+# 3.无重复字符的最长字串
+
+给定一个字符串 `s` ，请你找出其中不含有重复字符的 **最长 子串** 的长度。
+
+ 
+
+**示例 1:**
+
+```
+输入: s = "abcabcbb"
+输出: 3 
+解释: 因为无重复字符的最长子串是 "abc"，所以其长度为 3。
+```
+
+
+
+- zz解法：滑动窗口
+
+  当右窗口下一个字符不在窗口内时，移动右窗口，反之，移动左窗口
+
+  在此过程中维护一个哈希集合 `strset` ，用于在O(1)时间内判断字符是否在窗口内
+
+  ```py
+  class Solution:
+      def lengthOfLongestSubstring(self, s: str) -> int:
+          if len(s) == 1:
+              return 1
+          elif len(s) == 0:
+              return 0
+          i = j = 0
+          maxlen = 0
+          strset = set()
+          strset.add(s[0])
+          while i < len(s) and j < len(s):
+              if j == len(s) - 1 or s[j+1] in strset:
+                  strset.remove(s[i])
+                  i += 1
+                  maxlen = max(maxlen, j-i+1)
+              elif s[j+1] not in strset:
+                  j += 1
+                  strset.add(s[j])
+                  maxlen = max(maxlen, j-i+1)
+          return maxlen  
+  ```
+
+> *set* 对象是由具有唯一性的 [hashable](https://docs.python.org/zh-cn/3/glossary.html#term-hashable) 对象所组成的无序多项集。 常见的用途包括成员检测、从序列中去除重复项以及数学中的集合类计算，例如交集、并集、差集与对称差集等等。 （关于其他容器对象请参看 [`dict`](https://docs.python.org/zh-cn/3/library/stdtypes.html#dict), [`list`](https://docs.python.org/zh-cn/3/library/stdtypes.html#list) 与 [`tuple`](https://docs.python.org/zh-cn/3/library/stdtypes.html#tuple) 等内置类，以及 [`collections`](https://docs.python.org/zh-cn/3/library/collections.html#module-collections) 模块。）
+>
+> 与其他多项集一样，集合也支持 `x in set`, `len(set)` 和 `for x in set`。 作为一种无序的多项集，集合并不记录元素位置或插入顺序。 相应地，集合不支持索引、切片或其他序列类的操作。
+>
+> 目前有两种内置集合类型，[`set`](https://docs.python.org/zh-cn/3/library/stdtypes.html#set) 和 [`frozenset`](https://docs.python.org/zh-cn/3/library/stdtypes.html#frozenset)。 [`set`](https://docs.python.org/zh-cn/3/library/stdtypes.html#set) 类型是可变的 --- 其内容可以使用 `add()` 和 `remove()` 这样的方法来改变。 由于是可变类型，它没有哈希值，且不能被用作字典的键或其他集合的元素。 [`frozenset`](https://docs.python.org/zh-cn/3/library/stdtypes.html#frozenset) 类型是不可变并且为 [hashable](https://docs.python.org/zh-cn/3/glossary.html#term-hashable) --- 其内容在被创建后不能再改变；因此它可以被用作字典的键或其他集合的元素。
+>
+> 除了可以使用 [`set`](https://docs.python.org/zh-cn/3/library/stdtypes.html#set) 构造器，非空的 set (不是 frozenset) 还可以通过将以逗号分隔的元素列表包含于花括号之内来创建，例如: `{'jack', 'sjoerd'}`。
+
+---
+
+# 30.串联所有单词的字串
+
+给定一个字符串 `s` 和一个字符串数组 `words`**。** `words` 中所有字符串 **长度相同**。
+
+ `s` 中的 **串联子串** 是指一个包含 `words` 中所有字符串以任意顺序排列连接起来的子串。
+
+- 例如，如果 `words = ["ab","cd","ef"]`， 那么 `"abcdef"`， `"abefcd"`，`"cdabef"`， `"cdefab"`，`"efabcd"`， 和 `"efcdab"` 都是串联子串。 `"acdbef"` 不是串联子串，因为他不是任何 `words` 排列的连接。
+
+返回所有串联子串在 `s` 中的开始索引。你可以以 **任意顺序** 返回答案。
+
+ 
+
+**示例 1：**
+
+```
+输入：s = "barfoothefoobarman", words = ["foo","bar"]
+输出：[0,9]
+解释：因为 words.length == 2 同时 words[i].length == 3，连接的子字符串的长度必须为 6。
+子串 "barfoo" 开始位置是 0。它是 words 中以 ["bar","foo"] 顺序排列的连接。
+子串 "foobar" 开始位置是 9。它是 words 中以 ["foo","bar"] 顺序排列的连接。
+输出顺序无关紧要。返回 [9,0] 也是可以的。
+```
+
+
+
+- zz解法：
+
+滑动窗口，但不全是滑动窗口
+
+将`words`中的内容存入哈希表`wordset`，键为单词字符串，值为该单词在`words`中的数量。当右窗口指向的单词在 `wordset`中时，右窗口移动相当于单词长度的距离且单词在`wordset`中对应的词减1；当右窗口不在`wordset`中时， 左窗口移动一位，右窗口和左窗口对齐，重置`wordset`；当左右窗口之间距离达到`wordlen*len(words)`, 说明找到了一个符合条件的下标
+
+设s长度为ls，words长度为lw，则最坏情况下时间复杂度为 $O(ls\times lw)$ 
+
+第21行的 `j = i` 使得一个变态的coner case超时了（真恶心啊
+
+ ```py
+ class Solution:
+     def findSubstring(self, s: str, words: List[str]) -> List[int]:
+         wordlen = len(words[0])
+         n = wordlen * len(words)
+         ilis = []
+         i = j = 0
+         wordset = Counter(words)
+         while i<len(s) and j + wordlen  <= len(s):
+             if s[j:j+wordlen] in wordset and wordset[s[j:j+wordlen]] > 0:
+                 wordset[s[j:j+wordlen]] -= 1
+                 j += wordlen
+             else:
+                 i+=1
+                 j = i
+                 wordset = Counter(words)
+             if j < i :
+                 j = i 
+             if j - i == n:
+                 ilis.append(i)
+                 i += 1
+                 j = i
+                 wordset = Counter(words)
+         return ilis
+ ```
+
+- 官解
+
+思路
+
+此题是「438. 找到字符串中所有字母异位词」的进阶版。不同的是第 438 题的元素是字母，而此题的元素是单词。可以用类似「438. 找到字符串中所有字母异位词的官方题解」的方法二的滑动窗口来解这题。
+
+记 words 的长度为 m，words 中每个单词的长度为 n，s 的长度为 ls。首先需要将 s 划分为单词组，每个单词的大小均为 n （首尾除外）。这样的划分方法有 n 种，即先删去前 i （i=0∼n−1）个字母后，将剩下的字母进行划分，如果末尾有不到 n 个字母也删去。对这 n 种划分得到的单词数组分别使用滑动窗口对 words 进行类似于「字母异位词」的搜寻。
+
+划分成单词组后，一个窗口包含 s 中前 m 个单词，用一个哈希表 differ 表示窗口中单词频次和 words 中单词频次之差。初始化 differ 时，出现在窗口中的单词，每出现一次，相应的值增加 1，出现在 words 中的单词，每出现一次，相应的值减少 1。然后将窗口右移，右侧会加入一个单词，左侧会移出一个单词，并对 differ 做相应的更新。窗口移动时，若出现 differ 中值不为 0 的键的数量为 0，则表示这个窗口中的单词频次和 words 中单词频次相同，窗口的左端点是一个待求的起始位置。划分的方法有 n 种，做 n 次滑动窗口后，即可找到所有的起始位置。
+
+```py
+class Solution:
+    def findSubstring(self, s: str, words: List[str]) -> List[int]:
+        res = []
+        m, n, ls = len(words), len(words[0]), len(s)
+        for i in range(n):
+            if i + m * n > ls:
+                break
+            differ = Counter()
+            for j in range(m):
+                word = s[i + j * n: i + (j + 1) * n]
+                differ[word] += 1
+            for word in words:
+                differ[word] -= 1
+                if differ[word] == 0:
+                    del differ[word]
+            for start in range(i, ls - m * n + 1, n):
+                if start != i:
+                    word = s[start + (m - 1) * n: start + m * n]
+                    differ[word] += 1
+                    if differ[word] == 0:
+                        del differ[word]
+                    word = s[start - n: start]
+                    differ[word] -= 1
+                    if differ[word] == 0:
+                        del differ[word]
+                if len(differ) == 0:
+                    res.append(start)
+        return res
+```
+
+复杂度分析
+
+时间复杂度：O(ls×n)，其中 ls 是输入 s 的长度，n 是 words 中每个单词的长度。需要做 n 次滑动窗口，每次需要遍历一次 s。
+
+---
+
+# 76.最小覆盖子串
+
+
+
+给你一个字符串 `s` 、一个字符串 `t` 。返回 `s` 中涵盖 `t` 所有字符的最小子串。如果 `s` 中不存在涵盖 `t` 所有字符的子串，则返回空字符串 `""` 。
+
+ 
+
+**注意：**
+
+- 对于 `t` 中重复字符，我们寻找的子字符串中该字符数量必须不少于 `t` 中该字符数量。
+- 如果 `s` 中存在这样的子串，我们保证它是唯一的答案。
+
+ 
+
+**示例 1：**
+
+```
+输入：s = "ADOBECODEBANC", t = "ABC"
+输出："BANC"
+解释：最小覆盖子串 "BANC" 包含来自字符串 t 的 'A'、'B' 和 'C'。
+```
+
+
+
+- zz解法：滑动窗口
+
+维护哈希表 `dictt` ，`dictt` 中为窗口中目标字符和字符串 `t` 的字符数量之差；维护变量 `flag` ，`flag` 为窗口中数量足够的目标字符的数量，表现为`dictt` 中值小于等于0的键的数量。
+
+当 `flag > 0` 时，移动右窗口，如果移入窗口内的字符是目标字符就对 `dictt` 和 `flag` 做处理；当 `flag == 0` 时，移动左窗口，如果移出窗口的字符是目标字符就对`dictt`和`flag`做处理。当 `flag > 0` 且右窗口已经移动到 `s` 的末位，就退出循环。记录循环过程中长度最小的字符串。
+
+```py
+class Solution:
+    def minWindow(self, s: str, t: str) -> str:
+        i = j = 0
+        dictt = Counter(t)
+        minlen = len(s)
+        minlenstr = ""
+        flag = len(set(t));
+        while i<len(s) and j<len(s)+1:
+            if flag > 0 and j == len(s):#j已经无法移动
+                break
+            if flag > 0 and s[j] in dictt:
+                dictt[s[j]] -= 1
+                if dictt[s[j]] == 0:#有一个字符满足了数量条件
+                    flag -= 1
+                j+=1
+            elif flag > 0 and s[j] not in dictt:
+                j+=1
+            if flag == 0 and s[i] in dictt:#只需在左窗口移动时尝试更新minlen和minlenstr即可
+                if j - i <= minlen:
+                    minlenstr = s[i:j]
+                    minlen = j-i
+                dictt[s[i]] += 1
+                if dictt[s[i]] == 1:
+                    flag += 1
+                i+=1
+            elif flag == 0 and s[i] not in dictt:
+                if j - i <= minlen:
+                    minlenstr = s[i:j]
+                    minlen = j-i
+                i+=1
+        return minlenstr
+```
+
+
+
+---
+
+# 36.有效的数独
+
+请你判断一个 `9 x 9` 的数独是否有效。只需要 **根据以下规则** ，验证已经填入的数字是否有效即可。
+
+1. 数字 `1-9` 在每一行只能出现一次。
+2. 数字 `1-9` 在每一列只能出现一次。
+3. 数字 `1-9` 在每一个以粗实线分隔的 `3x3` 宫内只能出现一次。（请参考示例图）
+
+ 
+
+**注意：**
+
+- 一个有效的数独（部分已被填充）不一定是可解的。
+- 只需要根据以上规则，验证已经填入的数字是否有效即可。
+- 空白格用 `'.'` 表示。
+
+ 
+
+**示例 1：**
+
+![img](./assets/250px-sudoku-by-l2g-20050714svg.png)
+
+```
+输入：board = 
+[["5","3",".",".","7",".",".",".","."]
+,["6",".",".","1","9","5",".",".","."]
+,[".","9","8",".",".",".",".","6","."]
+,["8",".",".",".","6",".",".",".","3"]
+,["4",".",".","8",".","3",".",".","1"]
+,["7",".",".",".","2",".",".",".","6"]
+,[".","6",".",".",".",".","2","8","."]
+,[".",".",".","4","1","9",".",".","5"]
+,[".",".",".",".","8",".",".","7","9"]]
+输出：true
+```
+
+- zz解法：哈希表
+
+用哈希表储存遍历到的数字，共需要9+9+1=19张表
+
+```py
+class Solution:
+    def isValidSudoku(self, board: List[List[str]]) -> bool:
+        liss = [set() for _ in range(9)]
+        lisd = [set() for _ in range(9)]
+        for i in range(9):
+            se = set()
+            for j in range(9):
+                if board[i][j] == '.':
+                    continue
+                if board[i][j] not in se and board[i][j] not in liss[j]\
+                    and board[i][j] not in lisd[3*(i//3)+j//3]:
+                    se.add(board[i][j])
+                    liss[j].add(board[i][j])
+                    lisd[3*(i//3)+j//3].add(board[i][j])
+                else:
+                    return False
+        return True     
+```
+
+---
+
+# 54.螺旋矩阵
+
+给你一个 `m` 行 `n` 列的矩阵 `matrix` ，请按照 **顺时针螺旋顺序** ，返回矩阵中的所有元素。
+
+ 
+
+**示例 1：**
+
+![img](./assets/spiral1.jpg)
+
+```
+输入：matrix = [[1,2,3],[4,5,6],[7,8,9]]
+输出：[1,2,3,6,9,8,7,4,5]
+```
+
+
+
+- zz解法：哈希集合记录已经遍历到的序列元组，以便用O(1)时间查询某个位置是否被遍历过，如果遍历过程碰壁（遍历到矩阵边缘或遍历到已经遍历过的位置），就顺时针改变遍历方向。
+
+```py
+class Solution:
+    def spiralOrder(self, matrix: List[List[int]]) -> List[int]:
+        index = [0,0]
+        lis = [(0,1), (1,0), (0,-1), (-1,0)] #预设的遍历方向
+        index_lis = 0 #当前遍历方向
+        i = 1
+        result = []
+        result.append(matrix[0][0]) #将第一个元素加入结果列表
+        hashset = set()
+        hashset.add((0,0))#将第一个序列元组加入哈希集合
+        n = len(matrix) 
+        m = len(matrix[0])
+        while i < n*m:
+            if index[0]+lis[index_lis][0] < n and index[0]+lis[index_lis][0]>=0\
+            and index[1]+lis[index_lis][1] < m and index[1]+lis[index_lis][1]>=0\
+            and (index[0]+lis[index_lis][0],index[1]+lis[index_lis][1]) not in hashset:
+                index[0] = index[0]+lis[index_lis][0]
+                index[1] = index[1]+lis[index_lis][1]
+                result.append(matrix[index[0]][index[1]])
+                hashset.add((index[0], index[1])) 
+                print((index[0], index[1]))
+                i += 1
+
+            else:
+                index_lis = (index_lis+1)%4 #“碰壁了”，顺时针改变遍历方向
+        return result
+
+```
+
+---
+
+# 48.旋转图像
+
+给定一个 *n* × *n* 的二维矩阵 `matrix` 表示一个图像。请你将图像顺时针旋转 90 度。
+
+你必须在**[ 原地](https://baike.baidu.com/item/原地算法)** 旋转图像，这意味着你需要直接修改输入的二维矩阵。**请不要** 使用另一个矩阵来旋转图像。
+
+ 
+
+**示例 1：**
+
+![img](./assets/mat1.jpg)
+
+```
+输入：matrix = [[1,2,3],[4,5,6],[7,8,9]]
+输出：[[7,4,1],[8,5,2],[9,6,3]]
+```
+
+- zz解法：旋转后的矩阵与旋转前的矩阵关系为 `matrix_after[i][j] = matrix_before[n-1-j][i]`
+
+  分奇偶性讨论，一次使四个旋转位置的元素依次交换（利用python特性
+
+```py
+class Solution:
+    def rotate(self, matrix: List[List[int]]) -> None:
+        """
+        Do not return anything, modify matrix in-place instead.
+        """
+        n = len(matrix)
+        for i in range(n//2):
+            for j in range(n//2):
+                matrix[i][j], matrix[j][n-1-i], matrix[n-1-i][n-1-j], matrix[n-1-j][i]\
+                = matrix[n-1-j][i], matrix[i][j], matrix[j][n-1-i], matrix[n-1-i][n-1-j]
+        if n%2 == 0:
+            return
+        else:
+            for i in range(n//2):
+                j = n//2
+                matrix[i][j], matrix[j][n-1-i], matrix[n-1-i][n-1-j], matrix[n-1-j][i]\
+                = matrix[n-1-j][i], matrix[i][j], matrix[j][n-1-i], matrix[n-1-i][n-1-j]
+            return
+```
+
+- 官解：[用翻转代替旋转](https://leetcode.cn/problems/rotate-image/solutions/526980/xuan-zhuan-tu-xiang-by-leetcode-solution-vu3m/)
+
+  先水平翻转，再根据主对角线翻转得到结果：
+
+```py
+class Solution:
+    def rotate(self, matrix: List[List[int]]) -> None:
+        n = len(matrix)
+        # 水平翻转
+        for i in range(n // 2):
+            for j in range(n):
+                matrix[i][j], matrix[n - i - 1][j] = matrix[n - i - 1][j], matrix[i][j]
+        # 主对角线翻转
+        for i in range(n):
+            for j in range(i):
+                matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+```
+
+---
+
+# 73.矩阵置零
+
+给定一个 `*m* x *n*` 的矩阵，如果一个元素为 **0** ，则将其所在行和列的所有元素都设为 **0** 。请使用 **[原地](http://baike.baidu.com/item/原地算法)** 算法**。**
+
+ 
+
+**示例 1：**
+
+![img](./assets/mat1-1728914826996-1.jpg)
+
+```
+输入：matrix = [[1,1,1],[1,0,1],[1,1,1]]
+输出：[[1,0,1],[0,0,0],[1,0,1]]
+```
+
+- zz解法：遍历 使用哈希集合储存需要置零的行和列 遍历结束后再遍历哈希集合 依次置零
+
+```py
+class Solution:
+    def setZeroes(self, matrix: List[List[int]]) -> None:
+        """
+        Do not return anything, modify matrix in-place instead.
+        """
+        hashset1 = set()
+        hashset2 = set()
+        for i in range(len(matrix)):
+            flag = False
+            for j in range(len(matrix[0])):
+                if matrix[i][j] == 0 :
+                    hashset1.add(j)
+                    flag = True                    
+            if flag:
+                hashset2.add(i)
+        for j in hashset1:
+            for k in range(len(matrix)):
+                matrix[k][j] = 0
+        for i in hashset2:
+            for k in range(len(matrix[0])):
+                matrix[i][k] = 0
+```
+
+---
+
+# 289.生命游戏
+
+根据 [百度百科](https://baike.baidu.com/item/生命游戏/2926434?fr=aladdin) ， **生命游戏** ，简称为 **生命** ，是英国数学家约翰·何顿·康威在 1970 年发明的细胞自动机。
+
+给定一个包含 `m × n` 个格子的面板，每一个格子都可以看成是一个细胞。每个细胞都具有一个初始状态： `1` 即为 **活细胞** （live），或 `0` 即为 **死细胞** （dead）。每个细胞与其八个相邻位置（水平，垂直，对角线）的细胞都遵循以下四条生存定律：
+
+1. 如果活细胞周围八个位置的活细胞数少于两个，则该位置活细胞死亡；
+2. 如果活细胞周围八个位置有两个或三个活细胞，则该位置活细胞仍然存活；
+3. 如果活细胞周围八个位置有超过三个活细胞，则该位置活细胞死亡；
+4. 如果死细胞周围正好有三个活细胞，则该位置死细胞复活；
+
+下一个状态是通过将上述规则同时应用于当前状态下的每个细胞所形成的，其中细胞的出生和死亡是同时发生的。给你 `m x n` 网格面板 `board` 的当前状态，返回下一个状态。
+
+ 
+
+**示例 1：**
+
+![img](./assets/grid1.jpg)
+
+```
+输入：board = [[0,1,0],[0,0,1],[1,1,1],[0,0,0]]
+输出：[[0,0,0],[1,0,1],[0,1,1],[0,1,0]]
+```
+
+- zz解法：遍历矩阵，用哈希集合存放需要改变的位置下标，会引发状态改变的规则为第1，3，4条
+
+```py
+class Solution:
+    def gameOfLife(self, board: List[List[int]]) -> None:
+        """
+        Do not return anything, modify board in-place instead.
+        """
+        hashset1 = set()
+        n = len(board)
+        m = len(board[0])
+        lis = [(-1,0), (1,0), (0,1), (0,-1), (1,1), (1,-1), (-1,1), (-1,-1)]
+        for i in range(len(board)):
+            for j in range(len(board[0])):
+                countlive = 0
+                for ki, kj in lis:
+                    if i+ki >= n or i+ki < 0\
+                    or j+kj >= m or j+kj < 0:
+                        continue
+                    else:
+                        if board[i+ki][j+kj] == 1:
+                            countlive += 1
+                if board[i][j] == 0 and countlive == 3:
+                    hashset1.add((i,j))
+                elif board[i][j] == 1 and (countlive < 2 or countlive > 3):
+                    hashset1.add((i,j))
+
+        for i, j in hashset1:
+            board[i][j] = int(not board[i][j])
+```
+
+---
+
+# 383.赎金信
+
+给你两个字符串：`ransomNote` 和 `magazine` ，判断 `ransomNote` 能不能由 `magazine` 里面的字符构成。
+
+如果可以，返回 `true` ；否则返回 `false` 。
+
+`magazine` 中的每个字符只能在 `ransomNote` 中使用一次。
+
+ 
+
+**示例 1：**
+
+```
+输入：ransomNote = "a", magazine = "b"
+输出：false
+```
+
+
+
+- zz解法：哈希表Counter
+
+```py
+class Solution:
+    def canConstruct(self, ransomNote: str, magazine: str) -> bool:
+        hashcounter = Counter(magazine)
+        for char in ransomNote:
+            if hashcounter[char] == 0:
+                return False
+            else:
+                hashcounter[char] -= 1
+                continue
+        return True
+```
+
+---
+
+# 205.同构字符串
+
+给定两个字符串 `s` 和 `t` ，判断它们是否是同构的。
+
+如果 `s` 中的字符可以按某种映射关系替换得到 `t` ，那么这两个字符串是同构的。
+
+每个出现的字符都应当映射到另一个字符，同时不改变字符的顺序。不同字符不能映射到同一个字符上，相同字符只能映射到同一个字符上，字符可以映射到自己本身。
+
+ 
+
+**示例 1:**
+
+```
+输入：s = "egg", t = "add"
+输出：true
+```
+
+
+
+- zz解法：哈希表
+
+  两个哈希表分别记录s到t的映射和t到s的映射，遍历字符串s和t，在遍历过程中检查是否符合一一映射
+
+```py
+class Solution:
+    def isIsomorphic(self, s: str, t: str) -> bool:
+        dic = {}
+        dic1 = {}
+        for i in range(len(s)):
+            if s[i] not in dic and t[i] not in dic1:
+                dic[s[i]] = t[i]
+                dic1[t[i]] = s[i]
+            elif s[i] in dic and t[i] in dic1 and \
+            dic[s[i]] == t[i] and dic1[t[i]] == s[i]:
+                continue
+            else:
+                return False
+        return True 
+```
+
+---
+
+# 49.字母异位词分组
+
+给你一个字符串数组，请你将 **字母异位词** 组合在一起。可以按任意顺序返回结果列表。
+
+**字母异位词** 是由重新排列源单词的所有字母得到的一个新单词。
+
+ 
+
+**示例 1:**
+
+```py
+输入: strs = ["eat", "tea", "tan", "ate", "nat", "bat"]
+输出: [["bat"],["nat","tan"],["ate","eat","tea"]]
+```
+
+- zz解法：哈希
+
+  初始化一个空字典 `resultdic` ，字典的键储存可以标识异位字符串的哈希对象，字典的值储存结果列表。
+
+  使用 `Counter` 对象，可保证每个异位字符串的 `Counter(string)` 相同。遍历 `str` ，若 `Counter(string)` 不在字典 `resultdic` 中，则将相应的键值对添加进去；否则，修改相应的键值对的值
+
+  > [!NOTE]
+  >
+  > 注意 `Counter` 对象不是一个 hashable 的对象，要将其转换为 `frozenset` 对象才能作为字典的键。
+
+```py
+class Solution:
+    def groupAnagrams(self, strs: List[str]) -> List[List[str]]:
+        resultdic = {}
+        for i, string in enumerate(strs):
+            fset = frozenset(Counter(string).items())
+            if len(resultdic) == 0 or fset not in resultdic:
+                resultdic[fset] = [string]
+            else:
+                resultdic[fset].append(string)
+        return list(resultdic.values())
+```
+
+- 官解：计数哈希
+
+  由于互为字母异位词的两个字符串包含的字母相同，因此两个字符串中的相同字母出现的次数一定是相同的，故可以将每个字母出现的次数使用字符串表示，作为哈希表的键。
+
+  由于字符串只包含小写字母，因此对于每个字符串，**可以使用长度为 26 的数组记录每个字母出现的次数**。需要注意的是，在使用数组作为哈希表的键时，不同语言的支持程度不同，因此不同语言的实现方式也不同。
+
+```py
+class Solution:
+    def groupAnagrams(self, strs: List[str]) -> List[List[str]]:
+        mp = collections.defaultdict(list)
+
+        for st in strs:
+            counts = [0] * 26
+            for ch in st:
+                counts[ord(ch) - ord("a")] += 1
+            # 需要将 list 转换成 tuple 才能进行哈希
+            mp[tuple(counts)].append(st)
+        
+        return list(mp.values())
+```
+
+
+
+---
+
+# 128.最长连续序列
+
+给定一个未排序的整数数组 `nums` ，找出数字连续的最长序列（不要求序列元素在原数组中连续）的长度。
+
+请你设计并实现时间复杂度为 `O(n)` 的算法解决此问题。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums = [100,4,200,1,3,2]
+输出：4
+解释：最长数字连续序列是 [1, 2, 3, 4]。它的长度为 4。，
+```
+
+
+
+- zz解法：将数组转化为哈希集合 `numset` ，从集合里pop出一个元素，分别尝试向加1和减1两个方向上寻找连续的元素，如果找到就从集合里删除找到的元素。每找到一个元素就把当前的序列长度加1，找不到了就得到了一个连续序列的长度，维护这个过程中最长的连续序列。
+
+```py
+class Solution:
+    def longestConsecutive(self, nums: List[int]) -> int:
+        numset = set(nums)
+        maxlenth = 0
+        while len(numset) != 0:
+            num = numset.pop()
+            lenth = 1
+            i = num
+            while i+1 in numset:
+                numset.remove(i+1)
+                lenth += 1
+                i += 1
+            i = num
+            while i-1 in numset:
+                numset.remove(i-1)
+                lenth += 1
+                i -= 1
+            maxlenth = max(lenth, maxlenth)
+        return maxlenth
+```
+
+---
+
+# 56.合并区间
+
+以数组 `intervals` 表示若干个区间的集合，其中单个区间为 `intervals[i] = [starti, endi]` 。请你合并所有重叠的区间，并返回 *一个不重叠的区间数组，该数组需恰好覆盖输入中的所有区间* 。
+
+ 
+
+**示例 1：**
+
+```
+输入：intervals = [[1,3],[2,6],[8,10],[15,18]]
+输出：[[1,6],[8,10],[15,18]]
+解释：区间 [1,3] 和 [2,6] 重叠, 将它们合并为 [1,6].
+```
+
+> [!NOTE]
+>
+> 数组 `interval` 不一定是有序的
+
+- zz解法：单调栈
+
+  维护单调栈 `result` ，栈中的区间以递增的顺序排列且没有重叠。
+
+  从 `interval` 中弹出一个区间`lis1`，如果区间左边界大于 `result` 右边界，说明符合单调栈规则，直接入栈。
+
+  否则，从 `result` 不断弹出区间加入到 `interval` 中。直到区间可以入栈时，停止 `result` 弹出，从 `interval` 顶部弹出一个区间`lis2`，如果可以和`lis1`合并，则合并后再加入 `result` 中；否则，将`lis1` 和 `lis2` 依次加入栈中。
+
+  循环上面的步骤直到 `interval` 为空，返回 `result`。
+
+```py
+class Solution:
+    def merge(self, intervals: List[List[int]]) -> List[List[int]]:
+        result = []
+        while len(intervals) > 0:
+            if len(result) == 0:
+                result.append(intervals.pop())
+                continue
+            lis = intervals.pop()
+            if lis[0] > result[-1][1]:
+                result.append(lis)
+            else:
+                while len(result) > 0 and lis[0] <= result[-1][1]:
+                    intervals.append(result.pop())
+                lis2 = intervals.pop()
+                if lis2[0] > lis[1]:
+                    result.append(lis)
+                    result.append(lis2)
+                else:
+                    lis[0] = min(lis[0], lis2[0])
+                    lis[1] = max(lis[1], lis2[1])
+                    result.append(lis)
+        return result
+```
+
+- 官解：排序
+
+  我们用数组 merged 存储最终的答案。
+
+  首先，我们将列表中的区间按照左端点升序排序。然后我们将第一个区间加入 merged 数组中，并按顺序依次考虑之后的每个区间：
+
+  如果当前区间的左端点在数组 merged 中最后一个区间的右端点之后，那么它们不会重合，我们可以直接将这个区间加入数组 merged 的末尾；
+
+  否则，它们重合，我们需要用当前区间的右端点更新数组 merged 中最后一个区间的右端点，将其置为二者的较大值。
+
+```python
+class Solution:
+    def merge(self, intervals: List[List[int]]) -> List[List[int]]:
+        intervals.sort(key=lambda x: x[0])
+
+        merged = []
+        for interval in intervals:
+            # 如果列表为空，或者当前区间与上一区间不重合，直接添加
+            if not merged or merged[-1][1] < interval[0]:
+                merged.append(interval)
+            else:
+                # 否则的话，我们就可以与上一区间进行合并
+                merged[-1][1] = max(merged[-1][1], interval[1])
+
+        return merged
+```
+
+
+
+---
+
+# 57.插入区间
+
+给你一个 **无重叠的** *，*按照区间起始端点排序的区间列表 `intervals`，其中 `intervals[i] = [starti, endi]` 表示第 `i` 个区间的开始和结束，并且 `intervals` 按照 `starti` 升序排列。同样给定一个区间 `newInterval = [start, end]` 表示另一个区间的开始和结束。
+
+在 `intervals` 中插入区间 `newInterval`，使得 `intervals` 依然按照 `starti` 升序排列，且区间之间不重叠（如果有必要的话，可以合并区间）。
+
+返回插入之后的 `intervals`。
+
+**注意** 你不需要原地修改 `intervals`。你可以创建一个新数组然后返回它。
+
+ 
+
+**示例 1：**
+
+```
+输入：intervals = [[1,3],[6,9]], newInterval = [2,5]
+输出：[[1,5],[6,9]]
+```
+
+- zz解法：模拟过程即可
+
+```py
+class Solution:
+    def insert(self, intervals: List[List[int]], newInterval: List[int]) -> List[List[int]]:
+        result = []
+        flag = False
+        for i, inter in enumerate(intervals):
+            if (inter[1] < newInterval[0] and not flag) or\
+                (inter[0] > newInterval[1] and flag):
+                result.append(inter)
+                continue
+            elif inter[0] > newInterval[1] and not flag:
+                result.append(newInterval)
+                result.append(inter)
+                flag = True
+            elif (newInterval[0] >= inter[0] and newInterval[0] <= inter[1]) or\
+            (newInterval[1] >= inter[0] and newInterval[1] <= inter[1]):
+                newInterval[0] = min(newInterval[0], inter[0])
+                newInterval[1] = max(newInterval[1], inter[1])
+        if not flag:
+            result.append(newInterval)
+        return result       
+```
+
+---
+
+# 452.用最少数量的箭引爆气球
+
+有一些球形气球贴在一堵用 XY 平面表示的墙面上。墙面上的气球记录在整数数组 `points` ，其中`points[i] = [xstart, xend]` 表示水平直径在 `xstart` 和 `xend`之间的气球。你不知道气球的确切 y 坐标。
+
+一支弓箭可以沿着 x 轴从不同点 **完全垂直** 地射出。在坐标 `x` 处射出一支箭，若有一个气球的直径的开始和结束坐标为 `x``start`，`x``end`， 且满足  `xstart ≤ x ≤ x``end`，则该气球会被 **引爆** 。可以射出的弓箭的数量 **没有限制** 。 弓箭一旦被射出之后，可以无限地前进。
+
+给你一个数组 `points` ，*返回引爆所有气球所必须射出的 **最小** 弓箭数* 。
+
+ 
+
+**示例 1：**
+
+```
+输入：points = [[10,16],[2,8],[1,6],[7,12]]
+输出：2
+解释：气球可以用2支箭来爆破:
+-在x = 6处射出箭，击破气球[2,8]和[1,6]。
+-在x = 11处发射箭，击破气球[10,16]和[7,12]。
+```
+
+zz解法：排序加贪心
+
+先将 `points` 数组按第一个分量降序排序，然后进行贪心模拟：
+
+维护一个“可以射箭的区间” `p` ，起始的 `p` 就是 `points` 顶部的区间。将顶部的区间弹出，表示气球被射爆了（:laughing:)。循环考察新的 `point` 顶部区间，如果与 `p` 有重叠，则更新 `p` ，并且弹出，直到 `point` 顶部区间与 `p` 不重合。
+
+循环上面的过程，维护射出箭的数量，每一次循环都射出一只箭，直到`points` 为空。
+
+时间复杂度：$O(n\log n)$，排序时间为 $O(n\log n)$，后续循环的时间为 $O(n)$ ，可忽略
+
+```py
+class Solution:
+    def findMinArrowShots(self, points: List[List[int]]) -> int:
+        points.sort(key= lambda x: x[0], reverse=True)#排序
+        num = 0
+        while len(points) > 0:
+            p = points[-1]
+            while len(points) > 0 and p[0] <= p[1] and points[-1][0] <= p[1]:
+                p[0] = max(p[0], points[-1][0])#更新p的范围
+                p[1] = min(p[1], points[-1][1])
+                points.pop()
+            num += 1
+        return num
+```
+
+官解：排序加贪心
+
+按气球的右边界排序，依次考察气球的右边界。
+
+```py
+class Solution:
+    def findMinArrowShots(self, points: List[List[int]]) -> int:
+        if not points:
+            return 0
+        points.sort(key=lambda balloon: balloon[1])
+        pos = points[0][1]
+        ans = 1
+        for balloon in points:
+            if balloon[0] > pos:
+                pos = balloon[1]
+                ans += 1
+        return ans
+```
+
+---
+
+# 155.最小栈
+
+设计一个支持 `push` ，`pop` ，`top` 操作，并能在常数时间内检索到最小元素的栈。
+
+实现 `MinStack` 类:
+
+- `MinStack()` 初始化堆栈对象。
+- `void push(int val)` 将元素val推入堆栈。
+- `void pop()` 删除堆栈顶部的元素。
+- `int top()` 获取堆栈顶部的元素。
+- `int getMin()` 获取堆栈中的最小元素。
+
+ 
+
+**示例 1:**
+
+```
+输入：
+["MinStack","push","push","push","getMin","pop","top","getMin"]
+[[],[-2],[0],[-3],[],[],[],[]]
+
+输出：
+[null,null,null,null,-3,null,0,-2]
+```
+
+
+
+zz解法：在维护栈的同时维护一个单调栈（Monotonic Stack）`monostack`
+
+```py
+class MinStack:
+
+    def __init__(self):
+        self.monostack = []
+        self.stack = []
+
+    def push(self, val: int) -> None:
+        self.stack.append(val)
+        temp = []
+        while len(self.monostack) > 0 and self.monostack[-1] > val:
+            temp.append(self.monostack.pop())
+        self.monostack.append(val)
+        while len(temp) > 0:
+            self.monostack.append(temp.pop())
+        
+
+    def pop(self) -> None:
+        popval = self.stack.pop()
+        self.monostack.pop(self.monostack.index(popval))
+
+    def top(self) -> int:
+        return self.stack[-1]
+
+    def getMin(self) -> int:
+        return self.monostack[0]
+```
+
+官解：维护栈的同时维护一个“当前状态最小值的栈” 
+
+我们只需要设计一个数据结构，使得每个元素 a 与其相应的最小值 m 时刻保持一一对应。因此我们可以使用一个辅助栈，与元素栈同步插入与删除，用于存储与每个元素对应的最小值。
+
+当一个元素要入栈时，我们取当前辅助栈的栈顶存储的最小值，与当前元素比较得出最小值，将这个最小值插入辅助栈中；
+
+当一个元素要出栈时，我们把辅助栈的栈顶元素也一并弹出；
+
+在任意一个时刻，栈内元素的最小值就存储在辅助栈的栈顶元素中。
+
+![fig1](./assets/155_fig1.gif)
+
+```py
+class MinStack:
+    def __init__(self):
+        self.stack = []
+        self.min_stack = [math.inf]
+
+    def push(self, x: int) -> None:
+        self.stack.append(x)
+        self.min_stack.append(min(x, self.min_stack[-1]))
+
+    def pop(self) -> None:
+        self.stack.pop()
+        self.min_stack.pop()
+
+    def top(self) -> int:
+        return self.stack[-1]
+
+    def getMin(self) -> int:
+        return self.min_stack[-1]
 ```
 
