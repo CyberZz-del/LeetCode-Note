@@ -2316,3 +2316,58 @@ class Solution:
         return True
 ```
 
+# 2.两数相加
+
+给你两个 **非空** 的链表，表示两个非负的整数。它们每位数字都是按照 **逆序** 的方式存储的，并且每个节点只能存储 **一位** 数字。
+
+请你将两个数相加，并以相同形式返回一个表示和的链表。
+
+你可以假设除了数字 0 之外，这两个数都不会以 0 开头。
+
+ 
+
+**示例 1：**
+
+![img](./assets/addtwonumber1.jpg)
+
+```
+输入：l1 = [2,4,3], l2 = [5,6,4]
+输出：[7,0,8]
+解释：342 + 465 = 807.
+```
+
+zz解法：模拟即可，注意进位在循环间的传递，以及最后一位可能有进位
+
+ ```py
+ class Solution:
+     def addTwoNumbers(self, l1: Optional[ListNode], l2: Optional[ListNode]) -> Optional[ListNode]:
+         p1 = l1
+         p2 = l2
+         h = None
+         p = None
+         carry = 0  # 表示进位
+ 
+         while p1 is not None or p2 is not None or carry != 0:
+             a = p1.val if p1 else 0
+             b = p2.val if p2 else 0
+             total = a + b + carry
+             carry = total // 10  # 计算进位
+             r = total % 10  # 当前节点的值
+ 
+             new_node = ListNode(val=r)
+ 
+             if h is None:
+                 h = new_node  # 初始化头节点
+                 p = h
+             else:
+                 p.next = new_node  # 添加到链表中
+                 p = p.next
+ 
+             if p1 is not None:
+                 p1 = p1.next
+             if p2 is not None:
+                 p2 = p2.next
+         
+         return h
+ ```
+
