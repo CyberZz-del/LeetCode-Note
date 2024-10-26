@@ -2371,3 +2371,81 @@ zz解法：模拟即可，注意进位在循环间的传递，以及最后一位
          return h
  ```
 
+---
+
+# 21.合并两个有序链表
+
+将两个升序链表合并为一个新的 **升序** 链表并返回。新链表是通过拼接给定的两个链表的所有节点组成的。 
+
+ 
+
+**示例 1：**
+
+![img](./assets/merge_ex1.jpg)
+
+```
+输入：l1 = [1,2,4], l2 = [1,3,4]
+输出：[1,1,2,3,4,4]
+```
+
+zz解法：迭代
+
+```py
+class Solution:
+    def mergeTwoLists(self, list1: Optional[ListNode], list2: Optional[ListNode]) -> Optional[ListNode]:
+        p1, p2 = list1, list2
+        p = h = None
+        while p1 != None or p2 != None:
+            if p1 != None and (p2 == None or p2.val >= p1.val):
+                if h is None:
+                    p = h = ListNode(p1.val)
+                else:
+                    p.next = ListNode(p1.val)
+                    p = p.next
+                p1 = p1.next
+            elif p2 != None and (p1 == None or p1.val > p2.val):
+                if h is None:
+                    p = h = ListNode(p2.val)
+                else:
+                    p.next = ListNode(p2.val)
+                    p = p.next
+                p2 = p2.next
+        return h
+```
+
+官解：递归
+
+思路
+
+我们可以如下递归地定义两个链表里的 merge 操作（忽略边界情况，比如空链表等）：
+
+$$
+\begin{cases} 
+    \text{list1}[0] + \text{merge}(\text{list1}[1:], \text{list2}) & \text{if } \text{list1}[0] < \text{list2}[0] \\ 
+    \text{list2}[0] + \text{merge}(\text{list1}, \text{list2}[1:]) & \text{otherwise}
+\end{cases}
+$$
+
+也就是说，两个链表头部值较小的一个节点与剩下元素的 merge 操作结果合并。
+
+算法
+
+我们直接将以上递归过程建模，同时需要考虑边界情况。
+
+如果 l1 或者 l2 一开始就是空链表 ，那么没有任何操作需要合并，所以我们只需要返回非空链表。否则，我们要判断 l1 和 l2 哪一个链表的头节点的值更小，然后递归地决定下一个添加到结果里的节点。如果两个链表有一个为空，递归结束。
+
+```py
+class Solution:
+    def mergeTwoLists(self, l1: ListNode, l2: ListNode) -> ListNode:
+        if l1 is None:
+            return l2
+        elif l2 is None:
+            return l1
+        elif l1.val < l2.val:
+            l1.next = self.mergeTwoLists(l1.next, l2)
+            return l1
+        else:
+            l2.next = self.mergeTwoLists(l1, l2.next)
+            return l2
+```
+
