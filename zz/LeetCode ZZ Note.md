@@ -2534,3 +2534,71 @@ public:
 };
 ```
 
+---
+
+# 92.反转链表 
+
+给你单链表的头指针 `head` 和两个整数 `left` 和 `right` ，其中 `left <= right` 。请你反转从位置 `left` 到位置 `right` 的链表节点，返回 **反转后的链表** 。
+
+ 
+
+**示例 1：**
+
+![img](./assets/rev2ex2.jpg)
+
+```
+输入：head = [1,2,3,4,5], left = 2, right = 4
+输出：[1,4,3,2,5]
+```
+
+zz解法：非常丑陋的代码
+
+```py
+class Solution:
+    def reverseBetween(self, head: Optional[ListNode], left: int, right: int) -> Optional[ListNode]:
+        i = 1
+        cur = head
+        temp = None
+        top1 = top2 = None
+        while(cur):
+            print(i)
+            if i == left - 1:
+                top1 = cur
+                cur = cur.next
+                i += 1
+                continue
+            if i == left:
+                top2 = cur
+                
+                temp = cur
+                cur = cur.next
+                i += 1
+                top2.next = None
+                continue
+            elif i > left and i < right:
+                next = cur.next
+                cur.next = temp
+                temp = cur
+                cur = next
+                i += 1
+                continue
+            elif i == right:
+                next = cur.next
+                cur.next = temp
+                if top1:
+                    top1.next = cur
+                else:
+                    head = cur
+                cur = next
+                i += 1
+                continue
+            elif i == right + 1:
+                top2.next = cur
+                cur = cur.next
+                i += 1
+                continue
+            i += 1
+            cur = cur.next
+        return head
+```
+
