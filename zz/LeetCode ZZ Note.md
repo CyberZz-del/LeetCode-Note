@@ -2602,3 +2602,50 @@ class Solution:
         return head
 ```
 
+---
+
+# 19.删除链表的倒数第n个结点
+
+给你一个链表，删除链表的倒数第 `n` 个结点，并且返回链表的头结点。
+
+ 
+
+**示例 1：**
+
+![img](./assets/remove_ex1.jpg)
+
+```
+输入：head = [1,2,3,4,5], n = 2
+输出：[1,2,3,5]
+```
+
+zz解法：暴力
+
+先遍历一遍 再遍历一遍
+
+```py
+from typing import Optional
+class Solution:
+    def removeNthFromEnd(self, head: Optional[ListNode], n: int) -> Optional[ListNode]:
+        p = head
+        num = 0
+        while(p):
+            num += 1
+            p = p.next
+        p = head
+        if num == 1:
+            return None
+        while(p):
+            if num == n:
+                head = head.next
+            if num == n+1:
+                p.next = p.next.next
+                break
+            p = p.next
+            num -= 1
+        return head
+```
+
+官解：
+
+https://leetcode.cn/problems/remove-nth-node-from-end-of-list/solutions/450350/shan-chu-lian-biao-de-dao-shu-di-nge-jie-dian-b-61
