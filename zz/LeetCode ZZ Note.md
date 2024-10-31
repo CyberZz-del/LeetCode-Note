@@ -2095,9 +2095,6 @@ class MinStack:
     def getMin(self) -> int:
         return self.min_stack[-1]
 ```
-
----
-
 # 224.基本计算器
 
 给你一个字符串表达式 `s` ，请你实现一个基本计算器来计算并返回它的值。
@@ -2649,3 +2646,95 @@ class Solution:
 官解：
 
 https://leetcode.cn/problems/remove-nth-node-from-end-of-list/solutions/450350/shan-chu-lian-biao-de-dao-shu-di-nge-jie-dian-b-61
+
+---
+
+# 25.k个一组反转链表
+
+给你链表的头节点 `head` ，每 `k` 个节点一组进行翻转，请你返回修改后的链表。
+
+`k` 是一个正整数，它的值小于或等于链表的长度。如果节点总数不是 `k` 的整数倍，那么请将最后剩余的节点保持原有顺序。
+
+你不能只是单纯的改变节点内部的值，而是需要实际进行节点交换。
+
+ 
+
+**示例 1：**
+
+![img](./assets/reverse_ex1.jpg)
+
+```
+输入：head = [1,2,3,4,5], k = 2
+输出：[2,1,4,3,5]
+```
+
+zz解法：递归
+
+先检查链表当前长度，如果不足 k 则直接返回 `head`
+
+反转最前面k个节点，后面的部分调用递归，返回值为反转后的头节点
+
+```py
+class Solution:
+    def reverseKGroup(self, head: Optional[ListNode], k: int) -> Optional[ListNode]:
+        length = 0
+        t = head
+        while t:
+            length += 1
+            t = t.next
+        
+        if length < k:
+            return head
+
+        count = 0
+        p = None
+        q = head
+        while count < k:
+            p, q.next = q.next, p
+            p, q = q, p
+            count += 1
+        head.next = self.reverseKGroup(q, k)
+        return p
+```
+
+官解：模拟 https://leetcode.cn/problems/reverse-nodes-in-k-group/solutions/248591/k-ge-yi-zu-fan-zhuan-lian-biao-by-leetcode-solutio
+
+注意虚结点的设置
+
+```py
+class Solution:
+    # 翻转一个子链表，并且返回新的头与尾
+    def reverse(self, head: ListNode, tail: ListNode):
+        prev = tail.next
+        p = head
+        while prev != tail:
+            nex = p.next
+            p.next = prev
+            prev = p
+            p = nex
+        return tail, head
+
+    def reverseKGroup(self, head: ListNode, k: int) -> ListNode:
+        hair = ListNode(0)
+        hair.next = head
+        pre = hair
+
+        while head:
+            tail = pre
+            # 查看剩余部分长度是否大于等于 k
+            for i in range(k):
+                tail = tail.next
+                if not tail:
+                    return hair.next
+            nex = tail.next
+            head, tail = self.reverse(head, tail)
+            # 把子链表重新接回原链表
+            pre.next = head
+            tail.next = nex
+            pre = tail
+            head = tail.next
+        
+        return hair.next
+```
+
+---
