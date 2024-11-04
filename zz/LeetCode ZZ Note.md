@@ -2738,3 +2738,115 @@ class Solution:
 ```
 
 ---
+
+# 4.寻找两个正序数组的中位数
+
+给定两个大小分别为 `m` 和 `n` 的正序（从小到大）数组 `nums1` 和 `nums2`。请你找出并返回这两个正序数组的 **中位数** 。
+
+算法的时间复杂度应该为 `O(log (m+n))` 。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums1 = [1,3], nums2 = [2]
+输出：2.00000
+解释：合并数组 = [1,2,3] ，中位数 2
+```
+
+zz解法：二分查找
+
+```py
+class Solution:
+    def findMedianSortedArrays(self, nums1: List[int], nums2: List[int]) -> float:
+        # 保证nums1是短的
+        if len(nums1) > len(nums2):
+            nums1, nums2 = nums2, nums1
+        m, n = len(nums1), len(nums2)
+        # 二分查找
+        left, right = 0, m
+        half_len = (m + n + 1) // 2
+        while left < right:
+            i = (left + right) // 2
+            j = half_len - i
+            if nums1[i] < nums2[j - 1]:
+                left = i + 1
+            else:
+                right = i
+        i = left
+        j = half_len - i
+        nums1_left_max = float('-inf') if i == 0 else nums1[i - 1]
+        nums1_right_min = float('inf') if i == m else nums1[i]
+        nums2_left_max = float('-inf') if j == 0 else nums2[j - 1]
+        nums2_right_min = float('inf') if j == n else nums2[j]
+        if (m + n) % 2 == 1:
+            return max(nums1_left_max, nums2_left_max)
+        else:
+            return (max(nums1_left_max, nums2_left_max) + min(nums1_right_min, nums2_right_min)) / 2
+            
+```
+
+这段代码定义了一个名为`findMedianSortedArrays`的函数，用于在两个已排序的数组`nums1`和`nums2`中找到它们合并后的中位数。该算法使用了二分查找的思想，使得时间复杂度降为 \(O(\log(\min(m, n)))\)，适合处理较大的输入数据。以下是该代码的详细解释：
+
+**代码逻辑**
+
+1. **保证`nums1`是较短的数组**：
+   ```python
+   if len(nums1) > len(nums2):
+       nums1, nums2 = nums2, nums1
+   ```
+   这样做是为了优化效率，因为我们只需要在较短的数组上进行二分查找。如果`nums1`比`nums2`长，则交换它们。
+
+2. **初始化变量**：
+   ```python
+   m, n = len(nums1), len(nums2)
+   left, right = 0, m
+   half_len = (m + n + 1) // 2
+   ```
+   - `m`和`n`分别表示两个数组的长度。
+   - `left`和`right`表示`nums1`中二分查找的边界。
+   - `half_len`表示两个数组合并后，左半部分的长度。如果两个数组的总长度是奇数，那么左半部分会比右半部分多一个元素。
+
+3. **二分查找**：
+   ```python
+   while left < right:
+       i = (left + right) // 2
+       j = half_len - i
+       if nums1[i] < nums2[j - 1]:
+           left = i + 1
+       else:
+           right = i
+   ```
+   - 这里通过二分查找找到一个位置`i`，使得`nums1`的前`i`个元素与`nums2`的前`j`个元素（`j = half_len - i`）共同构成合并数组的左半部分。
+   - 条件`nums1[i] < nums2[j - 1]`表明`i`太小，需要增大`i`，所以更新`left = i + 1`；否则更新`right = i`。
+
+4. **确定边界值**：
+   ```python
+   i = left
+   j = half_len - i
+   nums1_left_max = float('-inf') if i == 0 else nums1[i - 1]
+   nums1_right_min = float('inf') if i == m else nums1[i]
+   nums2_left_max = float('-inf') if j == 0 else nums2[j - 1]
+   nums2_right_min = float('inf') if j == n else nums2[j]
+   ```
+   - 计算`nums1`和`nums2`的左半部分最大值和右半部分最小值。
+   - 通过`float('-inf')`和`float('inf')`处理边界情况（例如`i == 0`或`j == 0`表示数组已经用完某一侧的元素）。
+
+5. **计算中位数**：
+   ```python
+   if (m + n) % 2 == 1:
+       return max(nums1_left_max, nums2_left_max)
+   else:
+       return (max(nums1_left_max, nums2_left_max) + min(nums1_right_min, nums2_right_min)) / 2
+   ```
+   - 如果两个数组合并后的总长度是奇数，那么中位数就是左半部分的最大值，即`max(nums1_left_max, nums2_left_max)`。
+   - 如果是偶数，总的中位数是左右半部分的最大值和最小值的平均值，即`(max(nums1_left_max, nums2_left_max) + min(nums1_right_min, nums2_right_min)) / 2`。
+
+**总结**
+
+这段代码通过在较短数组上二分查找，确保找到分割位置，使得`nums1`和`nums2`分成两部分后，能够得到合并后数组的中位数。这样实现了更高的效率。
+
+官解：二分查找
+
+https://leetcode.cn/problems/median-of-two-sorted-arrays/solutions/258842/xun-zhao-liang-ge-you-xu-shu-zu-de-zhong-wei-s-114
