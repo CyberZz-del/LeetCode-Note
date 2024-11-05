@@ -2850,3 +2850,96 @@ class Solution:
 官解：二分查找
 
 https://leetcode.cn/problems/median-of-two-sorted-arrays/solutions/258842/xun-zhao-liang-ge-you-xu-shu-zu-de-zhong-wei-s-114
+
+---
+
+#  5.最长回文子串
+
+给你一个字符串 `s`，找到 `s` 中最长的 回文 子串。
+
+ 
+
+**示例 1：**
+
+```
+输入：s = "babad"
+输出："bab"
+解释："aba" 同样是符合题意的答案。
+```
+
+zz解法：**动态规划**
+
+```py
+class Solution:
+    def longestPalindrome(self, s: str) -> str:
+        n = len(s)
+        if n < 2:
+            return s
+        dp = [[False] *n for _ in range(n)]
+        for i in range(n):
+            dp[i][i] = True
+        max_len = 1
+        start = 0
+        for j in range(n):
+            for i in range(j):
+                if s[i] == s[j]:
+                    if j - i < 3:
+                        dp[i][j] = True
+                    else:
+                        dp[i][j] = dp[i+1][j-1]
+                else:
+                    dp[i][j] = False
+                if dp[i][j]:
+                    cur_len = j - i + 1
+                    if cur_len > max_len:
+                        max_len = cur_len
+                        start = i
+        return s[start:start+max_len]
+```
+
+
+
+这段代码实现了一个寻找字符串中最长回文子串的算法，使用了动态规划（Dynamic Programming，DP）的技术。下面是对代码的详细解释：
+
+### 1. **初始化部分**:
+
+- `n = len(s)`：计算字符串 `s` 的长度。
+- `if n < 2: return s`：如果字符串的长度小于 2，直接返回字符串，因为一个字符或空字符串本身就是回文串。
+- `dp = [[False] * n for _ in range(n)]`：创建一个二维布尔数组 `dp`，大小为 `n x n`，用于存储子串是否为回文串。初始时，所有元素都设置为 `False`。
+
+### 2. **初始化对角线部分**:
+
+- 这个循环将 `dp` 数组的对角线（即 `dp[i][i]`）设置为 `True`。因为任何单个字符都是回文串。
+
+### 3. **初始化最大回文串的长度和起始位置**:
+
+- `max_len = 1`：初始时，最长回文子串的长度为 1（因为最小回文子串是任何一个字符）。
+- `start = 0`：回文子串的起始位置为 0。
+
+### 4. **动态规划填表**:
+
+- `for j in range(n)` 外层循环遍历所有子串的结束位置 `j`。
+- `for i in range(j)` 内层循环遍历所有子串的起始位置 `i`，确保 `i` 小于 `j`。
+- `if s[i] == s[j]`：如果字符串 `s` 的 `i` 和 `j` 位置的字符相同，说明这两个字符可能是回文子串的一部分。
+  - 如果 `j - i < 3`：当 `i` 和 `j` 之间的距离小于 3（即子串的长度小于 3），则 `s[i] == s[j]` 直接保证子串 `s[i:j+1]` 是回文串（例如 "aa" 或 "aba"）。
+  - 否则，检查 `dp[i+1][j-1]` 是否为 `True`，即子串 `s[i+1:j]` 是否是回文串。如果是，则 `s[i:j+1]` 也是回文串。
+- `else: dp[i][j] = False`：如果 `s[i] != s[j]`，则 `s[i:j+1]` 不是回文串。
+
+### 5. **更新最大回文串的信息**:
+
+- 如果 `dp[i][j]` 为 `True`，说明子串 `s[i:j+1]` 是回文串。
+- `cur_len = j - i + 1`：计算当前回文子串的长度。
+- 如果 `cur_len > max_len`，则更新 `max_len` 和回文串的起始位置 `start`。
+
+### 6. **返回结果**:
+
+- 最后返回从 `start` 开始，长度为 `max_len` 的子串，即最长回文子串。
+
+### 算法时间复杂度分析：
+
+- 外层循环遍历所有 `j`，内层循环遍历所有 `i`，因此总时间复杂度是 `O(n^2)`，其中 `n` 是字符串的长度。
+- 由于使用了动态规划，所有的状态只计算一次并且存储在 `dp` 数组中，因此空间复杂度也是 `O(n^2)`。
+
+### 总结：
+
+这个算法通过动态规划的方式逐步检查所有子串是否为回文串，并在过程中记录最长的回文子串。其核心思想是利用回文串的性质，判断一个子串是否是回文串仅依赖于它的边界字符以及内部的子串是否为回文串。
