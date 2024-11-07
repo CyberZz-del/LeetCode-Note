@@ -3114,3 +3114,302 @@ class Solution:
 
 这种方法通过控制左右括号的数量，保证生成的括号组合始终有效。
 
+---
+
+# 33.搜索排序数组
+
+整数数组 `nums` 按升序排列，数组中的值 **互不相同** 。
+
+在传递给函数之前，`nums` 在预先未知的某个下标 `k`（`0 <= k < nums.length`）上进行了 **旋转**，使数组变为 `[nums[k], nums[k+1], ..., nums[n-1], nums[0], nums[1], ..., nums[k-1]]`（下标 **从 0 开始** 计数）。例如， `[0,1,2,4,5,6,7]` 在下标 `3` 处经旋转后可能变为 `[4,5,6,7,0,1,2]` 。
+
+给你 **旋转后** 的数组 `nums` 和一个整数 `target` ，如果 `nums` 中存在这个目标值 `target` ，则返回它的下标，否则返回 `-1` 。
+
+你必须设计一个时间复杂度为 `O(log n)` 的算法解决此问题。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums = [4,5,6,7,0,1,2], target = 0
+输出：4
+```
+
+分治：
+
+```py
+class Solution:
+    def search(self, nums: List[int], target: int) -> int:
+        left, right = 0, len(nums) - 1
+        
+        while left <= right:
+            mid = (left + right) // 2
+            if nums[mid] == target:
+                return mid
+            if nums[left] <= nums[mid]:  # Left half is sorted
+                if nums[left] <= target < nums[mid]:
+                    right = mid - 1
+                else:
+                    left = mid + 1
+            else:  # Right half is sorted
+                if nums[mid] < target <= nums[right]:
+                    left = mid + 1
+                else:
+                    right = mid - 1
+        return -1
+```
+
+1. **初始化**：定义两个指针 `left` 和 `right`，指向数组的左右边界。
+
+2. **循环查找**：
+   - 计算中点 `mid`。
+   - 如果 `nums[mid]` 等于目标值 `target`，直接返回 `mid` 作为目标值的索引。
+   - 如果 `nums[left] <= nums[mid]`，说明左半部分是有序的：
+     - 检查 `target` 是否在 `nums[left]` 和 `nums[mid]` 之间，如果是，则将 `right` 移动到 `mid - 1`，缩小搜索范围至左半部分；否则，将 `left` 移动到 `mid + 1`，搜索范围变为右半部分。
+   - 如果 `nums[mid] < nums[right]`，说明右半部分是有序的：
+     - 检查 `target` 是否在 `nums[mid]` 和 `nums[right]` 之间，如果是，则将 `left` 移动到 `mid + 1`；否则，将 `right` 移动到 `mid - 1`。
+
+3. **返回结果**：如果循环结束还未找到目标值，则返回 `-1`，表示目标值不在数组中。
+
+这种方法通过每次排除一半的元素，有效地缩小了查找范围。
+
+---
+
+# 34.在排序数组中查找元素的第一个和最后一个位置
+
+给你一个按照非递减顺序排列的整数数组 `nums`，和一个目标值 `target`。请你找出给定目标值在数组中的开始位置和结束位置。
+
+如果数组中不存在目标值 `target`，返回 `[-1, -1]`。
+
+你必须设计并实现时间复杂度为 `O(log n)` 的算法解决此问题。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums = [5,7,7,8,8,10], target = 8
+输出：[3,4]
+```
+
+
+
+分别对左边界和右边界进行二分查找
+
+````py
+class Solution:
+    def searchRange(self, nums: List[int], target: int) -> List[int]:
+        left = right = 0
+        lleft, lright = 0, len(nums) - 1
+        while lleft < lright:
+            lmid = (lleft + lright) // 2
+            if nums[lmid] < target:
+                lleft = lmid + 1
+            elif nums[lmid] >= target:
+                lright = lmid
+        left = lleft if nums and nums[lleft] == target else -1
+
+        rleft, rright = 0, len(nums) - 1
+        while rleft < rright:
+            rmid = (rleft + rright + 1) // 2
+            if nums[rmid] <= target:
+                rleft = rmid
+            elif nums[rmid] > target:
+                rright = rmid - 1
+        right = rright if nums and nums[rright] == target else -1
+
+        return [left, right]
+````
+
+这段代码在有序数组 `nums` 中查找指定目标值 `target` 的起始和结束位置，采用二分查找分别定位左右边界，具体思路如下：
+
+1. **查找左边界**：
+   - 初始化 `lleft` 和 `lright` 指向数组的左右边界。
+   - 使用二分查找，计算中点 `lmid`，并比较 `nums[lmid]` 与 `target`：
+     - 如果 `nums[lmid] < target`，说明 `target` 在右半部分，将 `lleft` 移动到 `lmid + 1`。
+     - 如果 `nums[lmid] >= target`，则 `target` 可能在左半部分，将 `lright` 移动到 `lmid`。
+   - 循环结束后，如果 `lleft` 位置的元素等于 `target`，则将 `left` 赋值为 `lleft`，否则设为 `-1`（表示未找到左边界）。
+
+2. **查找右边界**：
+   - 初始化 `rleft` 和 `rright`，同样指向数组的左右边界。
+   - 使用二分查找，计算中点 `rmid`，并比较 `nums[rmid]` 与 `target`：
+     - 如果 `nums[rmid] <= target`，说明 `target` 可能在右半部分，将 `rleft` 移动到 `rmid`。
+     - 如果 `nums[rmid] > target`，则将 `rright` 移动到 `rmid - 1`。
+   - 循环结束后，如果 `rright` 位置的元素等于 `target`，则将 `right` 赋值为 `rright`，否则设为 `-1`（表示未找到右边界）。
+
+3. **返回结果**：最终返回 `[left, right]`，表示 `target` 的起始和结束位置。如果 `target` 不存在于 `nums` 中，则返回 `[-1, -1]`。
+
+这种方法通过两次二分查找，分别确定 `target` 的左右边界，时间复杂度为 `O(log n)`。
+
+---
+
+# 39.组合求和
+
+给你一个 **无重复元素** 的整数数组 `candidates` 和一个目标整数 `target` ，找出 `candidates` 中可以使数字和为目标数 `target` 的 所有 **不同组合** ，并以列表形式返回。你可以按 **任意顺序** 返回这些组合。
+
+`candidates` 中的 **同一个** 数字可以 **无限制重复被选取** 。如果至少一个数字的被选数量不同，则两种组合是不同的。 
+
+对于给定的输入，保证和为 `target` 的不同组合数少于 `150` 个。
+
+ 
+
+**示例 1：**
+
+```
+输入：candidates = [2,3,6,7], target = 7
+输出：[[2,2,3],[7]]
+解释：
+2 和 3 可以形成一组候选，2 + 2 + 3 = 7 。注意 2 可以使用多次。
+7 也是一个候选， 7 = 7 。
+仅有这两种组合。
+```
+
+递归求解，注意重复解的筛除
+
+```py
+class Solution:
+    def combinationSum(self, candidates: List[int], target: int) -> List[List[int]]:
+        if target in candidates:
+            candidates_copy = candidates.copy()
+            candidates_copy.remove(target)
+            return [[target]] + self.combinationSum(candidates_copy, target)
+        result = []
+        for i, num in enumerate(candidates):
+            if num < target:
+                result += list(map(lambda x: x+[num], self.combinationSum(candidates, target - num)))
+        result = list(map(sorted, result))
+        result = list(set(map(tuple, result)))
+        result = list(map(list, result))
+        return result
+```
+
+**初始检查**：
+
+1. - 如果 `target` 在 `candidates` 中，首先将 `target` 自身作为一个组合加入结果。
+   - 然后创建 `candidates` 的副本 `candidates_copy` 并移除 `target`，递归查找剩余的组合，最终返回包含 `[target]` 组合在内的所有结果。
+   
+2. **递归查找组合**：
+   - 遍历 `candidates` 中的每个数字 `num`，如果 `num` 小于 `target`，则递归调用 `combinationSum(candidates, target - num)` 来查找剩余的组合。
+   - 使用 `map` 函数，将当前的 `num` 加入到每个子组合中，形成新的组合，并累加到 `result`。
+
+3. **去重和排序**：
+   - 使用 `map(sorted, result)` 将所有组合排序，确保每个组合的顺序一致。
+   - 使用 `set` 和 `map(tuple, result)` 去重，再转换回列表格式，得到所有不重复的组合。
+
+4. **返回结果**：最终返回 `result`，其中包含所有和为 `target` 的组合。
+
+这种方法通过递归和去重操作，确保找到的组合是无重复且唯一的。
+
+
+
+深搜：
+
+```py
+class Solution:
+    def combinationSum(self, candidates: List[int], target: int) -> List[List[int]]:
+        def dfs(candidates, target, path, res):
+            if target == 0:
+                res.append(path)
+                return
+            if target < 0:
+                return
+            for i, candidate in enumerate(candidates):
+                dfs(candidates[i:], target - candidate, path + [candidate], res)
+        res = []
+        dfs(candidates, target, [], res)
+        return res
+```
+
+---
+
+# 46.全排列
+
+给定一个不含重复数字的数组 `nums` ，返回其 *所有可能的全排列* 。你可以 **按任意顺序** 返回答案。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums = [1,2,3]
+输出：[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
+```
+
+深搜
+
+```py
+class Solution:
+    def permute(self, nums: List[int]) -> List[List[int]]:
+        result = []
+        def dfs(nums, path):
+            if len(nums) == 0:
+                result.append(path)
+            for i, num in enumerate(nums):
+                dfs(nums[:i] + nums[i+1:], path + [num])
+            return
+        dfs(nums, [])
+        return result
+```
+
+这段代码通过深度优先搜索（DFS）生成给定列表 `nums` 的所有全排列。具体思路如下：
+
+1. **定义递归函数 `dfs(nums, path)`**：
+   - `nums` 表示当前还未加入排列的元素。
+   - `path` 表示当前排列路径。
+
+2. **递归终止条件**：
+   - 如果 `nums` 为空，说明所有元素都已加入当前排列，将 `path` 添加到 `result` 中。
+
+3. **递归构建排列**：
+   - 遍历 `nums` 中的每个元素 `num`，对每个 `num`：
+     - 将其从 `nums` 中移除，生成 `nums[:i] + nums[i+1:]`。
+     - 将 `num` 添加到 `path`，然后递归调用 `dfs` 继续生成后续的排列。
+
+4. **初始化和返回**：
+   - 定义空列表 `result` 存储所有排列。
+   - 调用 `dfs(nums, [])` 开始递归，最终返回 `result`。
+
+这种方法通过递归构建每一种排列，生成所有可能的排列组合。
+
+---
+
+# 46.Pow(x,n)
+
+实现 [pow(*x*, *n*)](https://www.cplusplus.com/reference/valarray/pow/) ，即计算 `x` 的整数 `n` 次幂函数（即，`xn` ）。
+
+ 
+
+**示例 1：**
+
+```
+输入：x = 2.00000, n = 10
+输出：1024.00000
+```
+
+分治 递归
+
+```py
+class Solution:
+    def myPow(self, x: float, n: int) -> float:
+        if n == 0:
+            return 1
+        elif n < 0:
+            return 1/self.myPow(x, -n)
+        else:
+            y = self.myPow(x, n//2)
+            return y * y if n % 2 == 0 else y * y * x
+```
+
+
+
+1. **处理边界情况**：
+   - 如果 `n == 0`，返回 `1`，因为任何数的 0 次幂都为 1。
+   - 如果 `n < 0`，将问题转换为正指数的情况，即计算 `1 / self.myPow(x, -n)`。
+
+2. **递归计算快速幂**：
+   - 计算 `y = self.myPow(x, n//2)`，即将 `n` 不断减半，递归地计算较小的幂次。
+   - 判断 `n` 的奇偶性：
+     - 如果 `n` 是偶数，则返回 `y * y`。
+     - 如果 `n` 是奇数，则返回 `y * y * x`，多乘一次 `x` 以补足幂次。
+
+这种方法通过递归和将 `n` 不断减半，减少了计算次数，从而使时间复杂度降低为 `O(log n)`。
