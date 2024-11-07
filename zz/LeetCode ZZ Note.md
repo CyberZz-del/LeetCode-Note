@@ -2901,22 +2901,22 @@ class Solution:
 
 这段代码实现了一个寻找字符串中最长回文子串的算法，使用了动态规划（Dynamic Programming，DP）的技术。下面是对代码的详细解释：
 
-### 1. **初始化部分**:
+1. **初始化部分**:
 
 - `n = len(s)`：计算字符串 `s` 的长度。
 - `if n < 2: return s`：如果字符串的长度小于 2，直接返回字符串，因为一个字符或空字符串本身就是回文串。
 - `dp = [[False] * n for _ in range(n)]`：创建一个二维布尔数组 `dp`，大小为 `n x n`，用于存储子串是否为回文串。初始时，所有元素都设置为 `False`。
 
-### 2. **初始化对角线部分**:
+2. **初始化对角线部分**:
 
 - 这个循环将 `dp` 数组的对角线（即 `dp[i][i]`）设置为 `True`。因为任何单个字符都是回文串。
 
-### 3. **初始化最大回文串的长度和起始位置**:
+3. **初始化最大回文串的长度和起始位置**:
 
 - `max_len = 1`：初始时，最长回文子串的长度为 1（因为最小回文子串是任何一个字符）。
 - `start = 0`：回文子串的起始位置为 0。
 
-### 4. **动态规划填表**:
+4. **动态规划填表**:
 
 - `for j in range(n)` 外层循环遍历所有子串的结束位置 `j`。
 - `for i in range(j)` 内层循环遍历所有子串的起始位置 `i`，确保 `i` 小于 `j`。
@@ -2925,21 +2925,114 @@ class Solution:
   - 否则，检查 `dp[i+1][j-1]` 是否为 `True`，即子串 `s[i+1:j]` 是否是回文串。如果是，则 `s[i:j+1]` 也是回文串。
 - `else: dp[i][j] = False`：如果 `s[i] != s[j]`，则 `s[i:j+1]` 不是回文串。
 
-### 5. **更新最大回文串的信息**:
+5. **更新最大回文串的信息**:
 
 - 如果 `dp[i][j]` 为 `True`，说明子串 `s[i:j+1]` 是回文串。
 - `cur_len = j - i + 1`：计算当前回文子串的长度。
 - 如果 `cur_len > max_len`，则更新 `max_len` 和回文串的起始位置 `start`。
 
-### 6. **返回结果**:
+6. **返回结果**:
 
 - 最后返回从 `start` 开始，长度为 `max_len` 的子串，即最长回文子串。
 
-### 算法时间复杂度分析：
+算法时间复杂度分析：
 
 - 外层循环遍历所有 `j`，内层循环遍历所有 `i`，因此总时间复杂度是 `O(n^2)`，其中 `n` 是字符串的长度。
 - 由于使用了动态规划，所有的状态只计算一次并且存储在 `dp` 数组中，因此空间复杂度也是 `O(n^2)`。
 
-### 总结：
+总结：
 
 这个算法通过动态规划的方式逐步检查所有子串是否为回文串，并在过程中记录最长的回文子串。其核心思想是利用回文串的性质，判断一个子串是否是回文串仅依赖于它的边界字符以及内部的子串是否为回文串。
+
+# 17.电话号码的字母组合
+
+给定一个仅包含数字 `2-9` 的字符串，返回所有它能表示的字母组合。答案可以按 **任意顺序** 返回。
+
+给出数字到字母的映射如下（与电话按键相同）。注意 1 不对应任何字母。
+
+![img](./assets/200px-telephone-keypad2svg.png)
+
+ 
+
+**示例 1：**
+
+```
+输入：digits = "23"
+输出：["ad","ae","af","bd","be","bf","cd","ce","cf"]
+```
+
+zz解法：哈希表加回溯
+
+```py
+class Solution:
+    def letterCombinations(self, digits: str) -> List[str]:
+        if not digits:
+            return []
+        phone = {
+            '2': 'abc', '3': 'def', '4': 'ghi', '5': 'jkl',
+            '6': 'mno', '7': 'pqrs', '8': 'tuv', '9': 'wxyz'
+        }
+        def backtrack(index):
+            if index == len(digits):
+                combinations.append(''.join(combination))
+            else:
+                digit = digits[index]
+                for letter in phone[digit]:
+                    combination.append(letter)
+                    backtrack(index + 1)
+                    combination.pop()
+        combination = []
+        combinations = []
+        backtrack(0)
+        return combinations  
+```
+
+1. **检查输入是否为空：**
+   ```python
+   if not digits:
+       return []
+   ```
+   如果 `digits` 为空字符串，则直接返回一个空列表，因为没有数字时没有组合。
+
+2. **构建数字与字母的映射：**
+   ```python
+   phone = {
+       '2': 'abc', '3': 'def', '4': 'ghi', '5': 'jkl',
+       '6': 'mno', '7': 'pqrs', '8': 'tuv', '9': 'wxyz'
+   }
+   ```
+   这里定义了一个字典 `phone`，将每个数字映射到对应的字母集合。例如，数字 '2' 对应 "abc"，数字 '3' 对应 "def" 等等。
+
+3. **定义回溯函数 `backtrack`：**
+   ```python
+   def backtrack(index):
+       if index == len(digits):
+           combinations.append(''.join(combination))
+       else:
+           digit = digits[index]
+           for letter in phone[digit]:
+               combination.append(letter)
+               backtrack(index + 1)
+               combination.pop()
+   ```
+   - 这个函数 `backtrack` 接收一个 `index` 参数，用于追踪当前处理的 `digits` 字符串中的位置。
+   - 如果 `index` 达到了 `digits` 的长度（表示已经处理完所有数字），则将当前组合 `combination` 通过 `''.join(combination)` 连接成一个字符串，并添加到结果列表 `combinations` 中。
+   - 否则，取出当前数字对应的字母集合，通过循环逐个添加每个字母到 `combination` 中，然后递归调用 `backtrack`，处理下一个数字。
+   - 在递归调用返回后，使用 `combination.pop()` 来移除最后添加的字母，回溯到上一步状态，继续生成其他组合。
+
+4. **初始化组合变量并调用回溯函数：**
+   ```python
+   combination = []
+   combinations = []
+   backtrack(0)
+   ```
+   - `combination` 用于存储当前的字母组合（临时组合）。
+   - `combinations` 用于存储所有有效的字母组合。
+   - 最后，通过调用 `backtrack(0)` 启动回溯过程，从第一个数字开始生成组合。
+
+5. **返回结果：**
+   ```python
+   return combinations
+   ```
+   - 最终返回 `combinations`，其中包含了所有可能的字母组合。
+
