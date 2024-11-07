@@ -3036,3 +3036,81 @@ class Solution:
    ```
    - 最终返回 `combinations`，其中包含了所有可能的字母组合。
 
+---
+
+# 22.括号生成
+
+数字 `n` 代表生成括号的对数，请你设计一个函数，用于能够生成所有可能的并且 **有效的** 括号组合。
+
+ 
+
+**示例 1：**
+
+```
+输入：n = 3
+输出：["((()))","(()())","(())()","()(())","()()()"]
+```
+
+ zz解法：
+
+```py
+class Solution:
+    def generateParenthesis(self, n: int) -> List[str]:
+        hasset = set()
+        while n > 0 :
+            if not hasset:
+                hasset.add("()")
+            else:
+                newset = set()
+                for item in hasset:
+                    for i in range(len(item)):
+                        newset.add(item[:i] + "()" + item[i:])
+                hasset = newset
+            n -= 1
+        return list(hasset)
+```
+
+迭代加哈希
+
+1. 使用 `hasset` 集合来存储当前的括号组合，避免重复。
+2. 每次在现有组合中的各个位置插入一对括号 `"()"`，并生成新的组合。
+3. 重复这个过程 `n` 次，即生成 `n` 对括号的所有有效组合。
+4. 最后将 `hasset` 中的组合转换为列表并返回。
+
+通过集合的特性，保证生成的括号组合是唯一的。
+
+官解：回溯
+
+```py
+class Solution:
+    def generateParenthesis(self, n: int) -> List[str]:
+        def backtrack(s, left, right):
+            if len(s) == 2 * n:
+                res.append(s)
+                return
+            if left < n:
+                backtrack(s + '(', left + 1, right)
+            if right < left:
+                backtrack(s + ')', left, right + 1)
+        res = []
+        backtrack('', 0, 0)
+        return res
+```
+
+1. **定义回溯函数** `backtrack(s, left, right)`：
+   - `s`：当前构建的括号字符串。
+   - `left`：当前字符串中左括号的数量。
+   - `right`：当前字符串中右括号的数量。
+
+2. **终止条件**：当字符串长度达到 `2 * n` 时（即生成了 `n` 对括号），将 `s` 加入结果列表 `res` 中。
+
+3. **递归构建**：
+   - 如果左括号数量 `left` 小于 `n`，可以继续加左括号 `(`。
+   - 如果右括号数量 `right` 小于左括号数量 `left`，可以加右括号 `)`（确保每个右括号都有匹配的左括号）。
+
+4. 初始化结果列表 `res` 并调用回溯函数开始生成。
+
+5. 最后返回结果列表 `res`。
+
+这种方法通过控制左右括号的数量，保证生成的括号组合始终有效。
+
