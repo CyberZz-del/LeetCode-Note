@@ -823,7 +823,7 @@ class Solution:
 该代码的逻辑简洁概述如下：
 
 1. **输入检查**：首先检查 `s3` 的长度是否等于 `s1` 和 `s2` 长度之和，不等则直接返回 `False`。
-  
+
 2. **动态规划初始化**：使用二维布尔数组 `dp`，其中 `dp[i][j]` 表示 `s1` 的前 `i` 个字符和 `s2` 的前 `j` 个字符能否组成 `s3` 的前 `i+j` 个字符。
    - 初始状态：`dp[0][0] = True`，即空字符串可以组成空字符串。
    - 边界条件：用 `s1` 和 `s2` 填充 `dp` 的第一行和第一列。
@@ -832,3 +832,60 @@ class Solution:
    - 对于 `dp[i][j]`，检查从 `s1` 和 `s2` 中分别取一个字符能否匹配 `s3` 中的当前字符，如果可以匹配则标记为 `True`。
 
 4. **返回结果**：`dp[m-1][n-1]` 表示 `s1` 和 `s2` 是否能交错组成 `s3`。
+
+---
+
+# 98.验证二叉搜索树
+
+**有效** 二叉搜索树定义如下：
+
+- 节点的左子树只包含 **小于** 当前节点的数。
+- 节点的右子树只包含 **大于** 当前节点的数。
+- 所有左子树和右子树自身必须也是二叉搜索树。
+
+ 
+
+**示例 1：**
+
+![img](./assets/tree1.jpg)
+
+```
+输入：root = [2,1,3]
+输出：true
+```
+
+```py
+class Solution:
+    def isValidBST(self, root: Optional[TreeNode]) -> bool:
+        result = True
+        def visit(node, lower=float('-inf'), upper=float('inf')):
+            nonlocal result
+            if not result:
+                return
+            if not (lower < node.val < upper):
+                result = False
+                return
+            if node.left:
+                visit(node.left, lower, node.val)
+            if node.right:
+                visit(node.right, node.val, upper)
+        if root:
+            visit(root)
+        return result
+```
+
+该代码的逻辑简述如下：
+
+1. **初始化**：定义一个变量 `result`，用于跟踪整个树是否满足二叉搜索树 (BST) 的性质。
+
+2. **递归函数 `visit`**：定义了一个递归函数 `visit` 来检查每个节点是否符合 BST 要求：
+   - 每个节点的值应在允许的范围 `lower` 和 `upper` 之间。
+   - 如果节点值不在该范围内，将 `result` 设置为 `False`，停止进一步检查。
+   - 递归检查左右子树，将左子树的上界设为当前节点值，将右子树的下界设为当前节点值。
+
+3. **开始验证**：从根节点开始调用 `visit`，递归检查整个树。
+
+4. **返回结果**：最终返回 `result` 表示该树是否为有效的 BST。
+
+---
+
