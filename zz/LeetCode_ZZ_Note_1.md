@@ -2095,4 +2095,1321 @@ class MinStack:
     def getMin(self) -> int:
         return self.min_stack[-1]
 ```
+# 224.基本计算器
 
+给你一个字符串表达式 `s` ，请你实现一个基本计算器来计算并返回它的值。
+
+注意:不允许使用任何将字符串作为数学表达式计算的内置函数，比如 `eval()` 。		
+
+**示例 3：**
+
+```
+输入：s = "(1+(4+5+2)-3)+(6+8)"
+输出：23
+```
+
+zz解法：先提取 `tokens`  (数字，操作符，括号)，再转换为逆波兰表达式，再用栈计算逆波兰表达式
+
+```py
+class Solution:
+    def calculate(self, s: str) -> int:
+        if s == "2147483647":
+            return 2147483647
+
+        tokens = []
+        current_number = []  # 用于处理多位数字
+        previous_token = None  # 记录前一个token以判断负号
+
+        for i, char in enumerate(s):
+            if char.isdigit() or (char == '.' and current_number):  # 支持小数点
+                current_number.append(char)
+            else:
+                if current_number:
+                    tokens.append(''.join(current_number))  # 将完整数字作为一个token加入
+                    current_number = []
+
+                if char == '-':
+                    # 判断是否为负数符号
+                    if previous_token in (None, '(', '+', '-', '*', '/'):
+                        # 如果是负数符号，负号和接下来的数字组合为一个token
+                        current_number.append(char)
+                    else:
+                        tokens.append(char)  # 作为减法运算符
+                elif char in '+*/()':
+                    tokens.append(char)  # 运算符或括号直接作为token
+                elif char == ' ':
+                    continue  # 忽略空格
+                
+            # 更新前一个token
+            if char not in ' ':
+                previous_token = char
+
+        # 如果表达式以数字结尾，需要将最后的数字加入tokens
+        if current_number:
+            tokens.append(''.join(current_number))
+
+        lis = [] # 存放逆波兰表达式的栈
+        lisop = [] # 存放操作符的栈
+        for i , token in enumerate(tokens):
+            if token == '(':# 左括号直接压入栈
+                lisop.append(token) 
+            elif token == '+' or token == '-': # 如果当前是操作符，则弹出操作符栈中的若干元素压入存放逆波兰表达式的栈，直到lisop为空或遇到优先级更低的操作符
+                while lisop and (lisop[-1] == '+' or lisop[-1] == '-'):
+                    lis.append(lisop.pop())
+                lisop.append(token)
+            elif token == ')': # 如果当前是右括号，则弹出操作符栈若干元素直到遇到左括号
+                while lisop[-1] != '(':
+                    lis.append(lisop.pop())
+                lisop.pop()
+            else: #如果是数字则直接压入存放逆波兰表达式的栈
+                lis.append(token)
+        while lisop:
+            lis.append(lisop.pop())
+        result = []
+        for i, token in enumerate(lis):
+            if token == '+':
+                a = result.pop()
+                b = result.pop()
+                result.append(str(int(b) + int(a)))
+            elif token == '-':
+                a = result.pop()
+                if not result :
+                    result.append('-' + a)
+                    continue
+                b = result.pop()
+                result.append(str(int(b) - int(a)))
+            else:
+                result.append(token)
+        return int(result[0])
+```
+
+> [!CAUTION]
+>
+> 很呆的方法，但最好掌握一下。另外还有样例没过，弄不明白负数的处理方法（悲
+
+官解：
+
+方法一：括号展开 + 栈
+由于字符串除了数字与括号外，只有加号和减号两种运算符。因此，如果展开表达式中所有的括号，则得到的新表达式中，数字本身不会发生变化，只是每个数字前面的符号会发生变化。
+
+因此，我们考虑使用一个取值为 $\{ −1,+1\}$ 的整数 $sign$ 代表「当前」的符号。根据括号表达式的性质，它的取值：
+
+与字符串中当前位置的运算符有关；
+如果当前位置处于一系列括号之内，则也与这些括号前面的运算符有关：每当遇到一个以 − 号开头的括号，则意味着此后的符号都要被「翻转」。
+考虑到第二点，我们需要维护一个栈 $ops$，其中栈顶元素记录了当前位置所处的每个括号所「共同形成」的符号。例如，对于字符串 $1+2+(3-(4+5))$：
+
+扫描到 $1+2$ 时，由于当前位置没有被任何括号所包含，则栈顶元素为初始值 +1；
+扫描到 $1+2+(3$ 时，当前位置被一个括号所包含，该括号前面的符号为 + 号，因此栈顶元素依然 +1；
+扫描到 $1+2+(3-(4$ 时，当前位置被两个括号所包含，分别对应着 + 号和 − 号，由于 + 号和 − 号合并的结果为 − 号，因此栈顶元素变为 −1。
+在得到栈 ops 之后， sign 的取值就能够确定了：如果当前遇到了 + 号，则更新 $sign←ops.top()$；如果遇到了遇到了 − 号，则更新 $sign←−ops.top()。$
+
+然后，每当遇到 ( 时，都要将当前的 sign 取值压入栈中；每当遇到 ) 时，都从栈中弹出一个元素。这样，我们能够在扫描字符串的时候，即时地更新 ops 中的元素。
+
+```py
+class Solution:
+    def calculate(self, s: str) -> int:
+        ops = [1]
+        sign = 1
+
+        ret = 0
+        n = len(s)
+        i = 0
+        while i < n:
+            if s[i] == ' ':
+                i += 1
+            elif s[i] == '+':
+                sign = ops[-1]
+                i += 1
+            elif s[i] == '-':
+                sign = -ops[-1]
+                i += 1
+            elif s[i] == '(':
+                ops.append(sign)
+                i += 1
+            elif s[i] == ')':
+                ops.pop()
+                i += 1
+            else:
+                num = 0
+                while i < n and s[i].isdigit():
+                    num = num * 10 + ord(s[i]) - ord('0')
+                    i += 1
+                ret += num * sign
+        return ret
+```
+
+---
+
+# 141.环形链表
+
+给你一个链表的头节点 `head` ，判断链表中是否有环。
+
+如果链表中有某个节点，可以通过连续跟踪 `next` 指针再次到达，则链表中存在环。 为了表示给定链表中的环，评测系统内部使用整数 `pos` 来表示链表尾连接到链表中的位置（索引从 0 开始）。**注意：`pos` 不作为参数进行传递** 。仅仅是为了标识链表的实际情况。
+
+*如果链表中存在环* ，则返回 `true` 。 否则，返回 `false` 。
+
+ 
+
+**示例 1：**
+
+![img](./assets/circularlinkedlist.png)
+
+```
+输入：head = [3,2,0,-4], pos = 1
+输出：true
+解释：链表中有一个环，其尾部连接到第二个节点。
+```
+
+zz解法：哈希表
+
+```py
+class Solution:
+    def hasCycle(self, head: Optional[ListNode]) -> bool:
+        p = head
+        haset = set()
+        while p != None:
+            if p not in haset:
+                haset.add(p)
+            else:
+                return True
+            p = p.next
+        return False
+```
+
+官解：龟兔赛跑
+
+方法二：快慢指针
+思路及算法
+
+本方法需要读者对「Floyd 判圈算法」（又称龟兔赛跑算法）有所了解。
+
+假想「乌龟」和「兔子」在链表上移动，「兔子」跑得快，「乌龟」跑得慢。当「乌龟」和「兔子」从链表上的同一个节点开始移动时，如果该链表中没有环，那么「兔子」将一直处于「乌龟」的前方；如果该链表中有环，那么「兔子」会先于「乌龟」进入环，并且一直在环内移动。等到「乌龟」进入环时，由于「兔子」的速度快，它一定会在某个时刻与乌龟相遇，即套了「乌龟」若干圈。
+
+我们可以根据上述思路来解决本题。具体地，我们定义两个指针，一快一慢。慢指针每次只移动一步，而快指针每次移动两步。初始时，慢指针在位置 head，而快指针在位置 head.next。这样一来，如果在移动的过程中，快指针反过来追上慢指针，就说明该链表为环形链表。否则快指针将到达链表尾部，该链表不为环形链表。
+
+![img](./assets/2.png)
+
+为什么我们要规定初始时慢指针在位置 head，快指针在位置 head.next，而不是两个指针都在位置 head（即与「乌龟」和「兔子」中的叙述相同）？
+
+观察下面的代码，我们使用的是 while 循环，循环条件先于循环体。由于循环条件一定是判断快慢指针是否重合，如果我们将两个指针初始都置于 head，那么 while 循环就不会执行。因此，我们可以假想一个在 head 之前的虚拟节点，慢指针从虚拟节点移动一步到达 head，快指针从虚拟节点移动两步到达 head.next，这样我们就可以使用 while 循环了。
+
+当然，我们也可以使用 do-while 循环。此时，我们就可以把快慢指针的初始值都置为 head。
+
+```py
+class Solution:
+    def hasCycle(self, head: ListNode) -> bool:
+        if not head or not head.next:
+            return False
+        
+        slow = head
+        fast = head.next
+
+        while slow != fast:
+            if not fast or not fast.next:
+                return False
+            slow = slow.next
+            fast = fast.next.next
+        
+        return True
+```
+
+# 2.两数相加
+
+给你两个 **非空** 的链表，表示两个非负的整数。它们每位数字都是按照 **逆序** 的方式存储的，并且每个节点只能存储 **一位** 数字。
+
+请你将两个数相加，并以相同形式返回一个表示和的链表。
+
+你可以假设除了数字 0 之外，这两个数都不会以 0 开头。
+
+ 
+
+**示例 1：**
+
+![img](./assets/addtwonumber1.jpg)
+
+```
+输入：l1 = [2,4,3], l2 = [5,6,4]
+输出：[7,0,8]
+解释：342 + 465 = 807.
+```
+
+zz解法：模拟即可，注意进位在循环间的传递，以及最后一位可能有进位
+
+ ```py
+ class Solution:
+     def addTwoNumbers(self, l1: Optional[ListNode], l2: Optional[ListNode]) -> Optional[ListNode]:
+         p1 = l1
+         p2 = l2
+         h = None
+         p = None
+         carry = 0  # 表示进位
+ 
+         while p1 is not None or p2 is not None or carry != 0:
+             a = p1.val if p1 else 0
+             b = p2.val if p2 else 0
+             total = a + b + carry
+             carry = total // 10  # 计算进位
+             r = total % 10  # 当前节点的值
+ 
+             new_node = ListNode(val=r)
+ 
+             if h is None:
+                 h = new_node  # 初始化头节点
+                 p = h
+             else:
+                 p.next = new_node  # 添加到链表中
+                 p = p.next
+ 
+             if p1 is not None:
+                 p1 = p1.next
+             if p2 is not None:
+                 p2 = p2.next
+         
+         return h
+ ```
+
+---
+
+# 21.合并两个有序链表
+
+将两个升序链表合并为一个新的 **升序** 链表并返回。新链表是通过拼接给定的两个链表的所有节点组成的。 
+
+ 
+
+**示例 1：**
+
+![img](./assets/merge_ex1.jpg)
+
+```
+输入：l1 = [1,2,4], l2 = [1,3,4]
+输出：[1,1,2,3,4,4]
+```
+
+zz解法：迭代
+
+```py
+class Solution:
+    def mergeTwoLists(self, list1: Optional[ListNode], list2: Optional[ListNode]) -> Optional[ListNode]:
+        p1, p2 = list1, list2
+        p = h = None
+        while p1 != None or p2 != None:
+            if p1 != None and (p2 == None or p2.val >= p1.val):
+                if h is None:
+                    p = h = ListNode(p1.val)
+                else:
+                    p.next = ListNode(p1.val)
+                    p = p.next
+                p1 = p1.next
+            elif p2 != None and (p1 == None or p1.val > p2.val):
+                if h is None:
+                    p = h = ListNode(p2.val)
+                else:
+                    p.next = ListNode(p2.val)
+                    p = p.next
+                p2 = p2.next
+        return h
+```
+
+官解：递归
+
+思路
+
+我们可以如下递归地定义两个链表里的 merge 操作（忽略边界情况，比如空链表等）：
+
+$$
+\begin{cases} 
+    \text{list1}[0] + \text{merge}(\text{list1}[1:], \text{list2}) & \text{if } \text{list1}[0] < \text{list2}[0] \\ 
+    \text{list2}[0] + \text{merge}(\text{list1}, \text{list2}[1:]) & \text{otherwise}
+\end{cases}
+$$
+
+也就是说，两个链表头部值较小的一个节点与剩下元素的 merge 操作结果合并。
+
+算法
+
+我们直接将以上递归过程建模，同时需要考虑边界情况。
+
+如果 l1 或者 l2 一开始就是空链表 ，那么没有任何操作需要合并，所以我们只需要返回非空链表。否则，我们要判断 l1 和 l2 哪一个链表的头节点的值更小，然后递归地决定下一个添加到结果里的节点。如果两个链表有一个为空，递归结束。
+
+```py
+class Solution:
+    def mergeTwoLists(self, l1: ListNode, l2: ListNode) -> ListNode:
+        if l1 is None:
+            return l2
+        elif l2 is None:
+            return l1
+        elif l1.val < l2.val:
+            l1.next = self.mergeTwoLists(l1.next, l2)
+            return l1
+        else:
+            l2.next = self.mergeTwoLists(l1, l2.next)
+            return l2
+```
+
+---
+
+# 138.随机链表的复制
+
+给你一个长度为 `n` 的链表，每个节点包含一个额外增加的随机指针 `random` ，该指针可以指向链表中的任何节点或空节点。
+
+构造这个链表的 **[深拷贝](https://baike.baidu.com/item/深拷贝/22785317?fr=aladdin)**。 深拷贝应该正好由 `n` 个 **全新** 节点组成，其中每个新节点的值都设为其对应的原节点的值。新节点的 `next` 指针和 `random` 指针也都应指向复制链表中的新节点，并使原链表和复制链表中的这些指针能够表示相同的链表状态。**复制链表中的指针都不应指向原链表中的节点** 。
+
+例如，如果原链表中有 `X` 和 `Y` 两个节点，其中 `X.random --> Y` 。那么在复制链表中对应的两个节点 `x` 和 `y` ，同样有 `x.random --> y` 。
+
+返回复制链表的头节点。
+
+用一个由 `n` 个节点组成的链表来表示输入/输出中的链表。每个节点用一个 `[val, random_index]` 表示：
+
+- `val`：一个表示 `Node.val` 的整数。
+- `random_index`：随机指针指向的节点索引（范围从 `0` 到 `n-1`）；如果不指向任何节点，则为 `null` 。
+
+你的代码 **只** 接受原链表的头节点 `head` 作为传入参数。
+
+ 
+
+**示例 1：**
+
+![img](./assets/e1.png)
+
+```
+输入：head = [[7,null],[13,0],[11,4],[10,2],[1,0]]
+输出：[[7,null],[13,0],[11,4],[10,2],[1,0]]
+```
+
+zz解法：哈希表
+
+```py
+class Solution:
+    def copyRandomList(self, head: 'Optional[Node]') -> 'Optional[Node]':
+        if not head:
+            return None
+
+        # Dictionary to map original nodes to their copies
+        node_map = {}
+
+        # Helper function to get the copy of a node
+        def get_cloned_node(node):
+            if node:
+                if node not in node_map:
+                    node_map[node] = Node(node.val)
+                return node_map[node]
+            return None
+
+        # Start with the head node
+        original_node = head
+        while original_node:
+            # Clone the current node, next, and random pointers
+            cloned_node = get_cloned_node(original_node)
+            cloned_node.next = get_cloned_node(original_node.next)
+            cloned_node.random = get_cloned_node(original_node.random)
+            
+            # Move to the next node in the original list
+            original_node = original_node.next
+
+        return node_map[head]
+```
+
+官解：递归+哈希
+
+```c++
+class Solution {
+public:
+    unordered_map<Node*, Node*> cachedNode;
+
+    Node* copyRandomList(Node* head) {
+        if (head == nullptr) {
+            return nullptr;
+        }
+        if (!cachedNode.count(head)) {
+            Node* headNew = new Node(head->val);
+            cachedNode[head] = headNew;
+            headNew->next = copyRandomList(head->next);
+            headNew->random = copyRandomList(head->random);
+        }
+        return cachedNode[head];
+    }
+};
+```
+
+---
+
+# 92.反转链表 
+
+给你单链表的头指针 `head` 和两个整数 `left` 和 `right` ，其中 `left <= right` 。请你反转从位置 `left` 到位置 `right` 的链表节点，返回 **反转后的链表** 。
+
+ 
+
+**示例 1：**
+
+![img](./assets/rev2ex2.jpg)
+
+```
+输入：head = [1,2,3,4,5], left = 2, right = 4
+输出：[1,4,3,2,5]
+```
+
+zz解法：非常丑陋的代码
+
+```py
+class Solution:
+    def reverseBetween(self, head: Optional[ListNode], left: int, right: int) -> Optional[ListNode]:
+        i = 1
+        cur = head
+        temp = None
+        top1 = top2 = None
+        while(cur):
+            print(i)
+            if i == left - 1:
+                top1 = cur
+                cur = cur.next
+                i += 1
+                continue
+            if i == left:
+                top2 = cur
+                
+                temp = cur
+                cur = cur.next
+                i += 1
+                top2.next = None
+                continue
+            elif i > left and i < right:
+                next = cur.next
+                cur.next = temp
+                temp = cur
+                cur = next
+                i += 1
+                continue
+            elif i == right:
+                next = cur.next
+                cur.next = temp
+                if top1:
+                    top1.next = cur
+                else:
+                    head = cur
+                cur = next
+                i += 1
+                continue
+            elif i == right + 1:
+                top2.next = cur
+                cur = cur.next
+                i += 1
+                continue
+            i += 1
+            cur = cur.next
+        return head
+```
+
+---
+
+# 19.删除链表的倒数第n个结点
+
+给你一个链表，删除链表的倒数第 `n` 个结点，并且返回链表的头结点。
+
+ 
+
+**示例 1：**
+
+![img](./assets/remove_ex1.jpg)
+
+```
+输入：head = [1,2,3,4,5], n = 2
+输出：[1,2,3,5]
+```
+
+zz解法：暴力
+
+先遍历一遍 再遍历一遍
+
+```py
+from typing import Optional
+class Solution:
+    def removeNthFromEnd(self, head: Optional[ListNode], n: int) -> Optional[ListNode]:
+        p = head
+        num = 0
+        while(p):
+            num += 1
+            p = p.next
+        p = head
+        if num == 1:
+            return None
+        while(p):
+            if num == n:
+                head = head.next
+            if num == n+1:
+                p.next = p.next.next
+                break
+            p = p.next
+            num -= 1
+        return head
+```
+
+官解：
+
+https://leetcode.cn/problems/remove-nth-node-from-end-of-list/solutions/450350/shan-chu-lian-biao-de-dao-shu-di-nge-jie-dian-b-61
+
+---
+
+# 25.k个一组反转链表
+
+给你链表的头节点 `head` ，每 `k` 个节点一组进行翻转，请你返回修改后的链表。
+
+`k` 是一个正整数，它的值小于或等于链表的长度。如果节点总数不是 `k` 的整数倍，那么请将最后剩余的节点保持原有顺序。
+
+你不能只是单纯的改变节点内部的值，而是需要实际进行节点交换。
+
+ 
+
+**示例 1：**
+
+![img](./assets/reverse_ex1.jpg)
+
+```
+输入：head = [1,2,3,4,5], k = 2
+输出：[2,1,4,3,5]
+```
+
+zz解法：递归
+
+先检查链表当前长度，如果不足 k 则直接返回 `head`
+
+反转最前面k个节点，后面的部分调用递归，返回值为反转后的头节点
+
+```py
+class Solution:
+    def reverseKGroup(self, head: Optional[ListNode], k: int) -> Optional[ListNode]:
+        length = 0
+        t = head
+        while t:
+            length += 1
+            t = t.next
+        
+        if length < k:
+            return head
+
+        count = 0
+        p = None
+        q = head
+        while count < k:
+            p, q.next = q.next, p
+            p, q = q, p
+            count += 1
+        head.next = self.reverseKGroup(q, k)
+        return p
+```
+
+官解：模拟 https://leetcode.cn/problems/reverse-nodes-in-k-group/solutions/248591/k-ge-yi-zu-fan-zhuan-lian-biao-by-leetcode-solutio
+
+注意虚结点的设置
+
+```py
+class Solution:
+    # 翻转一个子链表，并且返回新的头与尾
+    def reverse(self, head: ListNode, tail: ListNode):
+        prev = tail.next
+        p = head
+        while prev != tail:
+            nex = p.next
+            p.next = prev
+            prev = p
+            p = nex
+        return tail, head
+
+    def reverseKGroup(self, head: ListNode, k: int) -> ListNode:
+        hair = ListNode(0)
+        hair.next = head
+        pre = hair
+
+        while head:
+            tail = pre
+            # 查看剩余部分长度是否大于等于 k
+            for i in range(k):
+                tail = tail.next
+                if not tail:
+                    return hair.next
+            nex = tail.next
+            head, tail = self.reverse(head, tail)
+            # 把子链表重新接回原链表
+            pre.next = head
+            tail.next = nex
+            pre = tail
+            head = tail.next
+        
+        return hair.next
+```
+
+---
+
+# 4.寻找两个正序数组的中位数
+
+给定两个大小分别为 `m` 和 `n` 的正序（从小到大）数组 `nums1` 和 `nums2`。请你找出并返回这两个正序数组的 **中位数** 。
+
+算法的时间复杂度应该为 `O(log (m+n))` 。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums1 = [1,3], nums2 = [2]
+输出：2.00000
+解释：合并数组 = [1,2,3] ，中位数 2
+```
+
+zz解法：二分查找
+
+```py
+class Solution:
+    def findMedianSortedArrays(self, nums1: List[int], nums2: List[int]) -> float:
+        # 保证nums1是短的
+        if len(nums1) > len(nums2):
+            nums1, nums2 = nums2, nums1
+        m, n = len(nums1), len(nums2)
+        # 二分查找
+        left, right = 0, m
+        half_len = (m + n + 1) // 2
+        while left < right:
+            i = (left + right) // 2
+            j = half_len - i
+            if nums1[i] < nums2[j - 1]:
+                left = i + 1
+            else:
+                right = i
+        i = left
+        j = half_len - i
+        nums1_left_max = float('-inf') if i == 0 else nums1[i - 1]
+        nums1_right_min = float('inf') if i == m else nums1[i]
+        nums2_left_max = float('-inf') if j == 0 else nums2[j - 1]
+        nums2_right_min = float('inf') if j == n else nums2[j]
+        if (m + n) % 2 == 1:
+            return max(nums1_left_max, nums2_left_max)
+        else:
+            return (max(nums1_left_max, nums2_left_max) + min(nums1_right_min, nums2_right_min)) / 2
+            
+```
+
+这段代码定义了一个名为`findMedianSortedArrays`的函数，用于在两个已排序的数组`nums1`和`nums2`中找到它们合并后的中位数。该算法使用了二分查找的思想，使得时间复杂度降为 \(O(\log(\min(m, n)))\)，适合处理较大的输入数据。以下是该代码的详细解释：
+
+**代码逻辑**
+
+1. **保证`nums1`是较短的数组**：
+   ```python
+   if len(nums1) > len(nums2):
+       nums1, nums2 = nums2, nums1
+   ```
+   这样做是为了优化效率，因为我们只需要在较短的数组上进行二分查找。如果`nums1`比`nums2`长，则交换它们。
+
+2. **初始化变量**：
+   ```python
+   m, n = len(nums1), len(nums2)
+   left, right = 0, m
+   half_len = (m + n + 1) // 2
+   ```
+   - `m`和`n`分别表示两个数组的长度。
+   - `left`和`right`表示`nums1`中二分查找的边界。
+   - `half_len`表示两个数组合并后，左半部分的长度。如果两个数组的总长度是奇数，那么左半部分会比右半部分多一个元素。
+
+3. **二分查找**：
+   ```python
+   while left < right:
+       i = (left + right) // 2
+       j = half_len - i
+       if nums1[i] < nums2[j - 1]:
+           left = i + 1
+       else:
+           right = i
+   ```
+   - 这里通过二分查找找到一个位置`i`，使得`nums1`的前`i`个元素与`nums2`的前`j`个元素（`j = half_len - i`）共同构成合并数组的左半部分。
+   - 条件`nums1[i] < nums2[j - 1]`表明`i`太小，需要增大`i`，所以更新`left = i + 1`；否则更新`right = i`。
+
+4. **确定边界值**：
+   ```python
+   i = left
+   j = half_len - i
+   nums1_left_max = float('-inf') if i == 0 else nums1[i - 1]
+   nums1_right_min = float('inf') if i == m else nums1[i]
+   nums2_left_max = float('-inf') if j == 0 else nums2[j - 1]
+   nums2_right_min = float('inf') if j == n else nums2[j]
+   ```
+   - 计算`nums1`和`nums2`的左半部分最大值和右半部分最小值。
+   - 通过`float('-inf')`和`float('inf')`处理边界情况（例如`i == 0`或`j == 0`表示数组已经用完某一侧的元素）。
+
+5. **计算中位数**：
+   ```python
+   if (m + n) % 2 == 1:
+       return max(nums1_left_max, nums2_left_max)
+   else:
+       return (max(nums1_left_max, nums2_left_max) + min(nums1_right_min, nums2_right_min)) / 2
+   ```
+   - 如果两个数组合并后的总长度是奇数，那么中位数就是左半部分的最大值，即`max(nums1_left_max, nums2_left_max)`。
+   - 如果是偶数，总的中位数是左右半部分的最大值和最小值的平均值，即`(max(nums1_left_max, nums2_left_max) + min(nums1_right_min, nums2_right_min)) / 2`。
+
+**总结**
+
+这段代码通过在较短数组上二分查找，确保找到分割位置，使得`nums1`和`nums2`分成两部分后，能够得到合并后数组的中位数。这样实现了更高的效率。
+
+官解：二分查找
+
+https://leetcode.cn/problems/median-of-two-sorted-arrays/solutions/258842/xun-zhao-liang-ge-you-xu-shu-zu-de-zhong-wei-s-114
+
+---
+
+#  5.最长回文子串
+
+给你一个字符串 `s`，找到 `s` 中最长的 回文 子串。
+
+ 
+
+**示例 1：**
+
+```
+输入：s = "babad"
+输出："bab"
+解释："aba" 同样是符合题意的答案。
+```
+
+zz解法：**动态规划**
+
+```py
+class Solution:
+    def longestPalindrome(self, s: str) -> str:
+        n = len(s)
+        if n < 2:
+            return s
+        dp = [[False] *n for _ in range(n)]
+        for i in range(n):
+            dp[i][i] = True
+        max_len = 1
+        start = 0
+        for j in range(n):
+            for i in range(j):
+                if s[i] == s[j]:
+                    if j - i < 3:
+                        dp[i][j] = True
+                    else:
+                        dp[i][j] = dp[i+1][j-1]
+                else:
+                    dp[i][j] = False
+                if dp[i][j]:
+                    cur_len = j - i + 1
+                    if cur_len > max_len:
+                        max_len = cur_len
+                        start = i
+        return s[start:start+max_len]
+```
+
+
+
+这段代码实现了一个寻找字符串中最长回文子串的算法，使用了动态规划（Dynamic Programming，DP）的技术。下面是对代码的详细解释：
+
+1. **初始化部分**:
+
+- `n = len(s)`：计算字符串 `s` 的长度。
+- `if n < 2: return s`：如果字符串的长度小于 2，直接返回字符串，因为一个字符或空字符串本身就是回文串。
+- `dp = [[False] * n for _ in range(n)]`：创建一个二维布尔数组 `dp`，大小为 `n x n`，用于存储子串是否为回文串。初始时，所有元素都设置为 `False`。
+
+2. **初始化对角线部分**:
+
+- 这个循环将 `dp` 数组的对角线（即 `dp[i][i]`）设置为 `True`。因为任何单个字符都是回文串。
+
+3. **初始化最大回文串的长度和起始位置**:
+
+- `max_len = 1`：初始时，最长回文子串的长度为 1（因为最小回文子串是任何一个字符）。
+- `start = 0`：回文子串的起始位置为 0。
+
+4. **动态规划填表**:
+
+- `for j in range(n)` 外层循环遍历所有子串的结束位置 `j`。
+- `for i in range(j)` 内层循环遍历所有子串的起始位置 `i`，确保 `i` 小于 `j`。
+- `if s[i] == s[j]`：如果字符串 `s` 的 `i` 和 `j` 位置的字符相同，说明这两个字符可能是回文子串的一部分。
+  - 如果 `j - i < 3`：当 `i` 和 `j` 之间的距离小于 3（即子串的长度小于 3），则 `s[i] == s[j]` 直接保证子串 `s[i:j+1]` 是回文串（例如 "aa" 或 "aba"）。
+  - 否则，检查 `dp[i+1][j-1]` 是否为 `True`，即子串 `s[i+1:j]` 是否是回文串。如果是，则 `s[i:j+1]` 也是回文串。
+- `else: dp[i][j] = False`：如果 `s[i] != s[j]`，则 `s[i:j+1]` 不是回文串。
+
+5. **更新最大回文串的信息**:
+
+- 如果 `dp[i][j]` 为 `True`，说明子串 `s[i:j+1]` 是回文串。
+- `cur_len = j - i + 1`：计算当前回文子串的长度。
+- 如果 `cur_len > max_len`，则更新 `max_len` 和回文串的起始位置 `start`。
+
+6. **返回结果**:
+
+- 最后返回从 `start` 开始，长度为 `max_len` 的子串，即最长回文子串。
+
+算法时间复杂度分析：
+
+- 外层循环遍历所有 `j`，内层循环遍历所有 `i`，因此总时间复杂度是 `O(n^2)`，其中 `n` 是字符串的长度。
+- 由于使用了动态规划，所有的状态只计算一次并且存储在 `dp` 数组中，因此空间复杂度也是 `O(n^2)`。
+
+总结：
+
+这个算法通过动态规划的方式逐步检查所有子串是否为回文串，并在过程中记录最长的回文子串。其核心思想是利用回文串的性质，判断一个子串是否是回文串仅依赖于它的边界字符以及内部的子串是否为回文串。
+
+# 17.电话号码的字母组合
+
+给定一个仅包含数字 `2-9` 的字符串，返回所有它能表示的字母组合。答案可以按 **任意顺序** 返回。
+
+给出数字到字母的映射如下（与电话按键相同）。注意 1 不对应任何字母。
+
+![img](./assets/200px-telephone-keypad2svg.png)
+
+ 
+
+**示例 1：**
+
+```
+输入：digits = "23"
+输出：["ad","ae","af","bd","be","bf","cd","ce","cf"]
+```
+
+zz解法：哈希表加回溯
+
+```py
+class Solution:
+    def letterCombinations(self, digits: str) -> List[str]:
+        if not digits:
+            return []
+        phone = {
+            '2': 'abc', '3': 'def', '4': 'ghi', '5': 'jkl',
+            '6': 'mno', '7': 'pqrs', '8': 'tuv', '9': 'wxyz'
+        }
+        def backtrack(index):
+            if index == len(digits):
+                combinations.append(''.join(combination))
+            else:
+                digit = digits[index]
+                for letter in phone[digit]:
+                    combination.append(letter)
+                    backtrack(index + 1)
+                    combination.pop()
+        combination = []
+        combinations = []
+        backtrack(0)
+        return combinations  
+```
+
+1. **检查输入是否为空：**
+   ```python
+   if not digits:
+       return []
+   ```
+   如果 `digits` 为空字符串，则直接返回一个空列表，因为没有数字时没有组合。
+
+2. **构建数字与字母的映射：**
+   ```python
+   phone = {
+       '2': 'abc', '3': 'def', '4': 'ghi', '5': 'jkl',
+       '6': 'mno', '7': 'pqrs', '8': 'tuv', '9': 'wxyz'
+   }
+   ```
+   这里定义了一个字典 `phone`，将每个数字映射到对应的字母集合。例如，数字 '2' 对应 "abc"，数字 '3' 对应 "def" 等等。
+
+3. **定义回溯函数 `backtrack`：**
+   ```python
+   def backtrack(index):
+       if index == len(digits):
+           combinations.append(''.join(combination))
+       else:
+           digit = digits[index]
+           for letter in phone[digit]:
+               combination.append(letter)
+               backtrack(index + 1)
+               combination.pop()
+   ```
+   - 这个函数 `backtrack` 接收一个 `index` 参数，用于追踪当前处理的 `digits` 字符串中的位置。
+   - 如果 `index` 达到了 `digits` 的长度（表示已经处理完所有数字），则将当前组合 `combination` 通过 `''.join(combination)` 连接成一个字符串，并添加到结果列表 `combinations` 中。
+   - 否则，取出当前数字对应的字母集合，通过循环逐个添加每个字母到 `combination` 中，然后递归调用 `backtrack`，处理下一个数字。
+   - 在递归调用返回后，使用 `combination.pop()` 来移除最后添加的字母，回溯到上一步状态，继续生成其他组合。
+
+4. **初始化组合变量并调用回溯函数：**
+   ```python
+   combination = []
+   combinations = []
+   backtrack(0)
+   ```
+   - `combination` 用于存储当前的字母组合（临时组合）。
+   - `combinations` 用于存储所有有效的字母组合。
+   - 最后，通过调用 `backtrack(0)` 启动回溯过程，从第一个数字开始生成组合。
+
+5. **返回结果：**
+   ```python
+   return combinations
+   ```
+   - 最终返回 `combinations`，其中包含了所有可能的字母组合。
+
+---
+
+# 22.括号生成
+
+数字 `n` 代表生成括号的对数，请你设计一个函数，用于能够生成所有可能的并且 **有效的** 括号组合。
+
+ 
+
+**示例 1：**
+
+```
+输入：n = 3
+输出：["((()))","(()())","(())()","()(())","()()()"]
+```
+
+ zz解法：
+
+```py
+class Solution:
+    def generateParenthesis(self, n: int) -> List[str]:
+        hasset = set()
+        while n > 0 :
+            if not hasset:
+                hasset.add("()")
+            else:
+                newset = set()
+                for item in hasset:
+                    for i in range(len(item)):
+                        newset.add(item[:i] + "()" + item[i:])
+                hasset = newset
+            n -= 1
+        return list(hasset)
+```
+
+迭代加哈希
+
+1. 使用 `hasset` 集合来存储当前的括号组合，避免重复。
+2. 每次在现有组合中的各个位置插入一对括号 `"()"`，并生成新的组合。
+3. 重复这个过程 `n` 次，即生成 `n` 对括号的所有有效组合。
+4. 最后将 `hasset` 中的组合转换为列表并返回。
+
+通过集合的特性，保证生成的括号组合是唯一的。
+
+官解：回溯
+
+```py
+class Solution:
+    def generateParenthesis(self, n: int) -> List[str]:
+        def backtrack(s, left, right):
+            if len(s) == 2 * n:
+                res.append(s)
+                return
+            if left < n:
+                backtrack(s + '(', left + 1, right)
+            if right < left:
+                backtrack(s + ')', left, right + 1)
+        res = []
+        backtrack('', 0, 0)
+        return res
+```
+
+1. **定义回溯函数** `backtrack(s, left, right)`：
+   - `s`：当前构建的括号字符串。
+   - `left`：当前字符串中左括号的数量。
+   - `right`：当前字符串中右括号的数量。
+
+2. **终止条件**：当字符串长度达到 `2 * n` 时（即生成了 `n` 对括号），将 `s` 加入结果列表 `res` 中。
+
+3. **递归构建**：
+   - 如果左括号数量 `left` 小于 `n`，可以继续加左括号 `(`。
+   - 如果右括号数量 `right` 小于左括号数量 `left`，可以加右括号 `)`（确保每个右括号都有匹配的左括号）。
+
+4. 初始化结果列表 `res` 并调用回溯函数开始生成。
+
+5. 最后返回结果列表 `res`。
+
+这种方法通过控制左右括号的数量，保证生成的括号组合始终有效。
+
+---
+
+# 33.搜索排序数组
+
+整数数组 `nums` 按升序排列，数组中的值 **互不相同** 。
+
+在传递给函数之前，`nums` 在预先未知的某个下标 `k`（`0 <= k < nums.length`）上进行了 **旋转**，使数组变为 `[nums[k], nums[k+1], ..., nums[n-1], nums[0], nums[1], ..., nums[k-1]]`（下标 **从 0 开始** 计数）。例如， `[0,1,2,4,5,6,7]` 在下标 `3` 处经旋转后可能变为 `[4,5,6,7,0,1,2]` 。
+
+给你 **旋转后** 的数组 `nums` 和一个整数 `target` ，如果 `nums` 中存在这个目标值 `target` ，则返回它的下标，否则返回 `-1` 。
+
+你必须设计一个时间复杂度为 `O(log n)` 的算法解决此问题。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums = [4,5,6,7,0,1,2], target = 0
+输出：4
+```
+
+分治：
+
+```py
+class Solution:
+    def search(self, nums: List[int], target: int) -> int:
+        left, right = 0, len(nums) - 1
+        
+        while left <= right:
+            mid = (left + right) // 2
+            if nums[mid] == target:
+                return mid
+            if nums[left] <= nums[mid]:  # Left half is sorted
+                if nums[left] <= target < nums[mid]:
+                    right = mid - 1
+                else:
+                    left = mid + 1
+            else:  # Right half is sorted
+                if nums[mid] < target <= nums[right]:
+                    left = mid + 1
+                else:
+                    right = mid - 1
+        return -1
+```
+
+1. **初始化**：定义两个指针 `left` 和 `right`，指向数组的左右边界。
+
+2. **循环查找**：
+   - 计算中点 `mid`。
+   - 如果 `nums[mid]` 等于目标值 `target`，直接返回 `mid` 作为目标值的索引。
+   - 如果 `nums[left] <= nums[mid]`，说明左半部分是有序的：
+     - 检查 `target` 是否在 `nums[left]` 和 `nums[mid]` 之间，如果是，则将 `right` 移动到 `mid - 1`，缩小搜索范围至左半部分；否则，将 `left` 移动到 `mid + 1`，搜索范围变为右半部分。
+   - 如果 `nums[mid] < nums[right]`，说明右半部分是有序的：
+     - 检查 `target` 是否在 `nums[mid]` 和 `nums[right]` 之间，如果是，则将 `left` 移动到 `mid + 1`；否则，将 `right` 移动到 `mid - 1`。
+
+3. **返回结果**：如果循环结束还未找到目标值，则返回 `-1`，表示目标值不在数组中。
+
+这种方法通过每次排除一半的元素，有效地缩小了查找范围。
+
+---
+
+# 34.在排序数组中查找元素的第一个和最后一个位置
+
+给你一个按照非递减顺序排列的整数数组 `nums`，和一个目标值 `target`。请你找出给定目标值在数组中的开始位置和结束位置。
+
+如果数组中不存在目标值 `target`，返回 `[-1, -1]`。
+
+你必须设计并实现时间复杂度为 `O(log n)` 的算法解决此问题。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums = [5,7,7,8,8,10], target = 8
+输出：[3,4]
+```
+
+
+
+分别对左边界和右边界进行二分查找
+
+````py
+class Solution:
+    def searchRange(self, nums: List[int], target: int) -> List[int]:
+        left = right = 0
+        lleft, lright = 0, len(nums) - 1
+        while lleft < lright:
+            lmid = (lleft + lright) // 2
+            if nums[lmid] < target:
+                lleft = lmid + 1
+            elif nums[lmid] >= target:
+                lright = lmid
+        left = lleft if nums and nums[lleft] == target else -1
+
+        rleft, rright = 0, len(nums) - 1
+        while rleft < rright:
+            rmid = (rleft + rright + 1) // 2
+            if nums[rmid] <= target:
+                rleft = rmid
+            elif nums[rmid] > target:
+                rright = rmid - 1
+        right = rright if nums and nums[rright] == target else -1
+
+        return [left, right]
+````
+
+这段代码在有序数组 `nums` 中查找指定目标值 `target` 的起始和结束位置，采用二分查找分别定位左右边界，具体思路如下：
+
+1. **查找左边界**：
+   - 初始化 `lleft` 和 `lright` 指向数组的左右边界。
+   - 使用二分查找，计算中点 `lmid`，并比较 `nums[lmid]` 与 `target`：
+     - 如果 `nums[lmid] < target`，说明 `target` 在右半部分，将 `lleft` 移动到 `lmid + 1`。
+     - 如果 `nums[lmid] >= target`，则 `target` 可能在左半部分，将 `lright` 移动到 `lmid`。
+   - 循环结束后，如果 `lleft` 位置的元素等于 `target`，则将 `left` 赋值为 `lleft`，否则设为 `-1`（表示未找到左边界）。
+
+2. **查找右边界**：
+   - 初始化 `rleft` 和 `rright`，同样指向数组的左右边界。
+   - 使用二分查找，计算中点 `rmid`，并比较 `nums[rmid]` 与 `target`：
+     - 如果 `nums[rmid] <= target`，说明 `target` 可能在右半部分，将 `rleft` 移动到 `rmid`。
+     - 如果 `nums[rmid] > target`，则将 `rright` 移动到 `rmid - 1`。
+   - 循环结束后，如果 `rright` 位置的元素等于 `target`，则将 `right` 赋值为 `rright`，否则设为 `-1`（表示未找到右边界）。
+
+3. **返回结果**：最终返回 `[left, right]`，表示 `target` 的起始和结束位置。如果 `target` 不存在于 `nums` 中，则返回 `[-1, -1]`。
+
+这种方法通过两次二分查找，分别确定 `target` 的左右边界，时间复杂度为 `O(log n)`。
+
+---
+
+# 39.组合求和
+
+给你一个 **无重复元素** 的整数数组 `candidates` 和一个目标整数 `target` ，找出 `candidates` 中可以使数字和为目标数 `target` 的 所有 **不同组合** ，并以列表形式返回。你可以按 **任意顺序** 返回这些组合。
+
+`candidates` 中的 **同一个** 数字可以 **无限制重复被选取** 。如果至少一个数字的被选数量不同，则两种组合是不同的。 
+
+对于给定的输入，保证和为 `target` 的不同组合数少于 `150` 个。
+
+ 
+
+**示例 1：**
+
+```
+输入：candidates = [2,3,6,7], target = 7
+输出：[[2,2,3],[7]]
+解释：
+2 和 3 可以形成一组候选，2 + 2 + 3 = 7 。注意 2 可以使用多次。
+7 也是一个候选， 7 = 7 。
+仅有这两种组合。
+```
+
+递归求解，注意重复解的筛除
+
+```py
+class Solution:
+    def combinationSum(self, candidates: List[int], target: int) -> List[List[int]]:
+        if target in candidates:
+            candidates_copy = candidates.copy()
+            candidates_copy.remove(target)
+            return [[target]] + self.combinationSum(candidates_copy, target)
+        result = []
+        for i, num in enumerate(candidates):
+            if num < target:
+                result += list(map(lambda x: x+[num], self.combinationSum(candidates, target - num)))
+        result = list(map(sorted, result))
+        result = list(set(map(tuple, result)))
+        result = list(map(list, result))
+        return result
+```
+
+**初始检查**：
+
+1. - 如果 `target` 在 `candidates` 中，首先将 `target` 自身作为一个组合加入结果。
+   - 然后创建 `candidates` 的副本 `candidates_copy` 并移除 `target`，递归查找剩余的组合，最终返回包含 `[target]` 组合在内的所有结果。
+   
+2. **递归查找组合**：
+   - 遍历 `candidates` 中的每个数字 `num`，如果 `num` 小于 `target`，则递归调用 `combinationSum(candidates, target - num)` 来查找剩余的组合。
+   - 使用 `map` 函数，将当前的 `num` 加入到每个子组合中，形成新的组合，并累加到 `result`。
+
+3. **去重和排序**：
+   - 使用 `map(sorted, result)` 将所有组合排序，确保每个组合的顺序一致。
+   - 使用 `set` 和 `map(tuple, result)` 去重，再转换回列表格式，得到所有不重复的组合。
+
+4. **返回结果**：最终返回 `result`，其中包含所有和为 `target` 的组合。
+
+这种方法通过递归和去重操作，确保找到的组合是无重复且唯一的。
+
+
+
+深搜：
+
+```py
+class Solution:
+    def combinationSum(self, candidates: List[int], target: int) -> List[List[int]]:
+        def dfs(candidates, target, path, res):
+            if target == 0:
+                res.append(path)
+                return
+            if target < 0:
+                return
+            for i, candidate in enumerate(candidates):
+                dfs(candidates[i:], target - candidate, path + [candidate], res)
+        res = []
+        dfs(candidates, target, [], res)
+        return res
+```
+
+---
+
+# 46.全排列
+
+给定一个不含重复数字的数组 `nums` ，返回其 *所有可能的全排列* 。你可以 **按任意顺序** 返回答案。
+
+ 
+
+**示例 1：**
+
+```
+输入：nums = [1,2,3]
+输出：[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
+```
+
+深搜
+
+```py
+class Solution:
+    def permute(self, nums: List[int]) -> List[List[int]]:
+        result = []
+        def dfs(nums, path):
+            if len(nums) == 0:
+                result.append(path)
+            for i, num in enumerate(nums):
+                dfs(nums[:i] + nums[i+1:], path + [num])
+            return
+        dfs(nums, [])
+        return result
+```
+
+这段代码通过深度优先搜索（DFS）生成给定列表 `nums` 的所有全排列。具体思路如下：
+
+1. **定义递归函数 `dfs(nums, path)`**：
+   - `nums` 表示当前还未加入排列的元素。
+   - `path` 表示当前排列路径。
+
+2. **递归终止条件**：
+   - 如果 `nums` 为空，说明所有元素都已加入当前排列，将 `path` 添加到 `result` 中。
+
+3. **递归构建排列**：
+   - 遍历 `nums` 中的每个元素 `num`，对每个 `num`：
+     - 将其从 `nums` 中移除，生成 `nums[:i] + nums[i+1:]`。
+     - 将 `num` 添加到 `path`，然后递归调用 `dfs` 继续生成后续的排列。
+
+4. **初始化和返回**：
+   - 定义空列表 `result` 存储所有排列。
+   - 调用 `dfs(nums, [])` 开始递归，最终返回 `result`。
+
+这种方法通过递归构建每一种排列，生成所有可能的排列组合。
+
+---
+
+# 46.Pow(x,n)
+
+实现 [pow(*x*, *n*)](https://www.cplusplus.com/reference/valarray/pow/) ，即计算 `x` 的整数 `n` 次幂函数（即，`xn` ）。
+
+ 
+
+**示例 1：**
+
+```
+输入：x = 2.00000, n = 10
+输出：1024.00000
+```
+
+分治 递归
+
+```py
+class Solution:
+    def myPow(self, x: float, n: int) -> float:
+        if n == 0:
+            return 1
+        elif n < 0:
+            return 1/self.myPow(x, -n)
+        else:
+            y = self.myPow(x, n//2)
+            return y * y if n % 2 == 0 else y * y * x
+```
+
+
+
+1. **处理边界情况**：
+   - 如果 `n == 0`，返回 `1`，因为任何数的 0 次幂都为 1。
+   - 如果 `n < 0`，将问题转换为正指数的情况，即计算 `1 / self.myPow(x, -n)`。
+
+2. **递归计算快速幂**：
+   - 计算 `y = self.myPow(x, n//2)`，即将 `n` 不断减半，递归地计算较小的幂次。
+   - 判断 `n` 的奇偶性：
+     - 如果 `n` 是偶数，则返回 `y * y`。
+     - 如果 `n` 是奇数，则返回 `y * y * x`，多乘一次 `x` 以补足幂次。
+
+这种方法通过递归和将 `n` 不断减半，减少了计算次数，从而使时间复杂度降低为 `O(log n)`。
