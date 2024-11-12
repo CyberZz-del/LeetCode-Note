@@ -934,3 +934,82 @@ class Solution:
    - `not_hold[2]`表示最多两次交易后的最大收益。
 
 简而言之，这段代码使用动态规划来更新持有和不持有股票的收益状态，从而得到最大利润。
+
+---
+
+# 124.二叉树中的最大路径和
+
+二叉树中的 **路径** 被定义为一条节点序列，序列中每对相邻节点之间都存在一条边。同一个节点在一条路径序列中 **至多出现一次** 。该路径 **至少包含一个** 节点，且不一定经过根节点。
+
+**路径和** 是路径中各节点值的总和。
+
+给你一个二叉树的根节点 `root` ，返回其 **最大路径和** 。
+
+ 
+
+**示例 1：**
+
+![img](./assets/exx1.jpg)
+
+```
+输入：root = [1,2,3]
+输出：6
+解释：最优路径是 2 -> 1 -> 3 ，路径和为 2 + 1 + 3 = 6
+```
+
+```py
+class Solution:
+    def maxPathSum(self, root: Optional[TreeNode]) -> int:
+        maxSum = float('-inf')
+        def dfs(node: Optional[TreeNode]):
+            nonlocal maxSum
+            if not node:
+                return (0, 0)
+            maxLeft = max(max(dfs(node.left)), 0)
+            maxRight = max(max(dfs(node.right)), 0)
+            maxSum = max(maxSum, node.val + maxLeft + maxRight)
+            return (maxLeft + node.val, maxRight + node.val)
+        dfs(root)
+        return maxSum
+```
+
+该代码旨在计算二叉树中任意路径的最大路径和。逻辑简述如下：
+
+1. **初始化最大路径和**：定义 `maxSum`，初始值为负无穷，用于记录遍历过程中发现的最大路径和。
+
+2. **递归函数 `dfs`**：
+   - `dfs(node)` 返回从当前节点 `node` 出发的左右路径最大贡献值。
+   - 如果 `node` 为 `None`，返回 `(0, 0)` 表示空节点贡献值为0。
+   - 递归计算左右子树的最大路径和 `maxLeft` 和 `maxRight`，如果某一子路径贡献值为负则取0（不选该路径）。
+
+3. **更新 `maxSum`**：
+   - 对于每个节点，计算包含左右子树路径的最大路径和 `node.val + maxLeft + maxRight`，并更新 `maxSum`。
+
+4. **返回路径贡献值**：
+   - 对于每个节点 `node`，返回左右路径中较大的一个加上当前节点值，以供父节点选择。
+
+5. **最终结果**：递归遍历完成后，`maxSum` 即为全局最大路径和。
+
+代码中存在冗余部分，`dfs` 实际只需返回单个路径贡献值而不是 `(maxLeft + node.val, maxRight + node.val)`，以下为简化代码：
+
+```python
+class Solution:
+    def maxPathSum(self, root: Optional[TreeNode]) -> int:
+        maxSum = float('-inf')
+        def dfs(node: Optional[TreeNode]) -> int:
+            nonlocal maxSum
+            if not node:
+                return 0
+            maxLeft = max(dfs(node.left), 0)
+            maxRight = max(dfs(node.right), 0)
+            maxSum = max(maxSum, node.val + maxLeft + maxRight)
+            return node.val + max(maxLeft, maxRight)
+        dfs(root)
+        return maxSum
+```
+
+### 解释
+- 每次递归返回单路径贡献值 `node.val + max(maxLeft, maxRight)`，即从 `node` 到某一子节点的最大贡献路径。
+
+---
+
